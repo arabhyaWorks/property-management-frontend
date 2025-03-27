@@ -132,9 +132,12 @@ const addMonths = (dateString: string, months: number): string => {
   const date = new Date(dateString);
   const newDate = new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
   if (date.getDate() !== newDate.getDate()) {
-    newDate.setDate(0); // Set to last day of previous month
+    newDate.setDate(0); // Set to last day of previous month if day overflows
   }
-  return newDate.toISOString().split("T")[0];
+  const year = newDate.getFullYear();
+  const month = String(newDate.getMonth() + 1).padStart(2, "0");
+  const day = String(newDate.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const calculateLateFee = (dueDate: string, paymentDate: string, lfpd: number): number => {
