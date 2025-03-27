@@ -330,52 +330,6 @@ const calculateLateFee = (
   return 0;
 };
 
-const getFinancialYearFromDate = (dateString: string): string => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const financialYear =
-    month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
-  return financialYear;
-};
-
-const generateFinancialYearOptions = (allotmentDate: string): string[] => {
-  const allotmentFY = getFinancialYearFromDate(allotmentDate);
-  const [startYear] = allotmentFY.split("-").map(Number);
-
-  const options: string[] = [];
-  for (let year = startYear; year <= 2025; year++) {
-    options.push(`${year}-${year + 1}`);
-  }
-  return options;
-};
-
-const calculateServiceChargeLateFee = (
-  allotmentFY: string,
-  selectedFY: string,
-  paymentDate: string,
-  serviceChargeAmount: number
-): number => {
-  if (!allotmentFY || !selectedFY || !paymentDate) return 0;
-
-  const [selectedStartYear] = selectedFY.split("-").map(Number);
-  const dueDate = new Date(`${selectedStartYear + 1}-03-31`);
-  const payment = new Date(paymentDate);
-
-  if (payment <= dueDate) return 0;
-
-  const currentDate = new Date("2025-03-23");
-  const yearsDelayed = currentDate.getFullYear() - (selectedStartYear + 1);
-
-  if (yearsDelayed <= 0) return 0;
-  if (yearsDelayed === 1) return serviceChargeAmount * 0.05;
-  if (yearsDelayed === 2) return serviceChargeAmount * 0.1;
-  if (yearsDelayed >= 3) return serviceChargeAmount * 0.15;
-
-  return 0;
-};
-
 const formatDateToDDMMYYYY = (dateString: string): string | null => {
   if (!dateString) return null;
   const date = new Date(dateString);
@@ -396,14 +350,236 @@ const validateMobileNumber = (value: string): boolean => {
 };
 
 //
+// ----------------------------- ServiceChargeStep Component -----------------------------
+//
+
+interface ServiceChargeStepProps {
+  formData: any;
+  setFormData: (data: any) => void;
+  errors: { [key: string]: string };
+  setErrors: (errors: { [key: string]: string }) => void;
+}
+
+function ServiceChargeStep({
+  formData,
+  setFormData,
+  errors,
+  setErrors,
+}: ServiceChargeStepProps) {
+  const [financialYearOptions, setFinancialYearOptions] = useState<string[]>([]);
+
+  // Utility functions moved from main component
+  const getFinancialYearFromDate = (dateString: string): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const financialYear =
+      month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
+    return financialYear;
+  };
+
+  const generateFinancialYearOptions = (allotmentDate: string): string[] => {
+    const allotmentFY = getFinancialYearFromDate(allotmentDate);
+    const [startYear] = allotmentFY.split("-").map(Number);
+
+    const options: string[] = [];
+    for (let year = startYear; year <= 2025; year++) {
+      options.push(`${year}-${year + 1}`);
+    }
+    return options;
+  };
+
+  const calculateServiceChargeLateFee = (
+    allotmentFY: string,
+    selectedFY: string,
+    paymentDate: string,
+    serviceChargeAmount: number
+  ): number => {
+    if (!allotmentFY || !selectedFY || !paymentDate) return 0;
+
+    const [selectedStartYear] = selectedFY.split("-").map(Number);
+    const dueDate = new Date(`${selectedStartYear + 1}-03-31`);
+    const payment = new Date(paymentDate);
+
+    if (payment <= dueDate) return 0;
+
+    const currentDate = new Date("2025-03-23");
+    const yearsDelayed = currentDate.getFullYear() - (selectedStartYear + 1);
+
+    if (yearsDelayed <= 0) return 0;
+    if (yearsDelayed === 1) return serviceChargeAmount * 0.05;
+    if (yearsDelayed === 2) return serviceChargeAmount * 0.1;
+    if (yearsDelayed >= 3) return serviceChargeAmount * 0.15;
+
+    return 0;
+  };
+
+  // Generate financial year options
+  useEffect(() => {
+    const allotmentDate = formData.propertyRecord.avantan_dinank;
+    if (allotmentDate) {
+      const options = generateFinancialYearOptions(allotmentDate);
+      setFinancialYearOptions(options);
+  
+      // Only update if service_charge_financial_year is not already set
+      if (!formData.serviceCharges[0]?.service_charge_financial_year) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          serviceCharges: [
+            {
+              ...(prevFormData.serviceCharges[0] || {}),
+              service_charge_financial_year: options[0],
+            },
+          ],
+        }));
+      }
+    }
+  }, [
+    formData.propertyRecord.avantan_dinank,
+    formData.serviceCharges[0]?.service_charge_financial_year,
+  ]);
+
+  // Calculate service charge amount and late fee
+
+  useEffect(() => {
+    const floorType = formData.propertyRecord.property_floor_type;
+    const serviceChargeAmount =
+      floorType === "LGF" ? 10610 : floorType === "UGF" ? 11005 : 0;
+  
+    const allotmentFY = getFinancialYearFromDate(
+      formData.propertyRecord.avantan_dinank
+    );
+    const selectedFY =
+      formData.serviceCharges[0]?.service_charge_financial_year || allotmentFY;
+    const paymentDate = formData.serviceCharges[0]?.service_charge_payment_date;
+  
+    const lateFee = paymentDate
+      ? calculateServiceChargeLateFee(
+          allotmentFY,
+          selectedFY,
+          paymentDate,
+          serviceChargeAmount
+        )
+      : 0;
+    const totalServiceCharge = serviceChargeAmount + lateFee;
+  
+    // Only update if values have changed
+    const currentServiceCharge = formData.serviceCharges[0] || {};
+    if (
+      currentServiceCharge.service_charge_amount !== serviceChargeAmount ||
+      currentServiceCharge.service_charge_late_fee !== lateFee ||
+      currentServiceCharge.service_charge_total !== totalServiceCharge
+    ) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        serviceCharges: [
+          {
+            ...(prevFormData.serviceCharges[0] || {}),
+            service_charge_amount: serviceChargeAmount,
+            service_charge_late_fee: lateFee,
+            service_charge_total: totalServiceCharge,
+          },
+        ],
+      }));
+    }
+  }, [
+    formData.propertyRecord.property_floor_type,
+    formData.propertyRecord.avantan_dinank,
+    formData.serviceCharges[0]?.service_charge_financial_year,
+    formData.serviceCharges[0]?.service_charge_payment_date,
+  ]);
+
+
+  const handleInputChange = (fieldId: string, value: any) => {
+    setFormData({
+      ...formData,
+      serviceCharges: [
+        {
+          ...(formData.serviceCharges[0] || {}),
+          [fieldId]: value === "" ? null : value,
+        },
+      ],
+    });
+  };
+
+  const fields = formSteps[6].fields; // Use fields from formSteps[6]
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white pb-2 border-b border-gray-200 dark:border-gray-700">
+        Service Charge Details
+      </h3>
+      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        Fill in the details for service charges.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mt-4">
+        {fields.map((field) => {
+          const fieldValue = formData.serviceCharges[0]?.[field.id] || "";
+          return (
+            <div key={field.id} className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {field.label}
+                {field.required && (
+                  <span className="text-red-500 dark:text-red-400 ml-1">*</span>
+                )}
+              </label>
+              {field.type === "select" ? (
+                <select
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                  onChange={(e) => handleInputChange(field.id, e.target.value)}
+                  value={fieldValue}
+                >
+                  <option value="" className="dark:bg-gray-800">
+                    Select option...
+                  </option>
+                  {financialYearOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="dark:bg-gray-800"
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : field.type === "date" ? (
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                  value={fieldValue}
+                  onChange={(e) => handleInputChange(field.id, e.target.value)}
+                />
+              ) : (
+                <input
+                  type={field.type}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                  value={fieldValue}
+                  readOnly={field.readOnly}
+                  onChange={(e) => handleInputChange(field.id, e.target.value)}
+                />
+              )}
+              {errors[field.id] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field.id]}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+//
 // ----------------------------- Main Component -----------------------------
 //
+
 export default function CreateNewProperty() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [formData, setFormData] = useState<any>({
     propertyRecord: {},
     installmentPlan: {},
-    paymentInstallments: [], // Now an array of multiple entries
+    paymentInstallments: [],
     serviceCharges: [],
   });
   const [currentPaymentEntry, setCurrentPaymentEntry] = useState<any>({
@@ -411,12 +587,9 @@ export default function CreateNewProperty() {
     interest_amount: "",
     late_fee: "",
     payment_date: "",
-  }); // For the current payment entry being edited
+  });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [yojnas, setYojnas] = useState<any[]>([]);
-  const [financialYearOptions, setFinancialYearOptions] = useState<string[]>(
-    []
-  );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const today = new Date().toISOString().split("T")[0];
@@ -498,7 +671,6 @@ export default function CreateNewProperty() {
     }
   }, [formData.installmentPlan.start_date_of_installment_year]);
 
-  // Calculate late fee for the current payment entry
   useEffect(() => {
     if (currentStep === 4) {
       const paymentDate = currentPaymentEntry.payment_date;
@@ -537,99 +709,15 @@ export default function CreateNewProperty() {
     currentStep,
   ]);
 
-  useEffect(() => {
-    const allotmentDate = formData.propertyRecord.avantan_dinank;
-    if (allotmentDate) {
-      const options = generateFinancialYearOptions(allotmentDate);
-      setFinancialYearOptions(options);
-
-      if (!formData.serviceCharges[0]?.service_charge_financial_year) {
-        setFormData((prev: any) => ({
-          ...prev,
-          serviceCharges: [
-            {
-              ...prev.serviceCharges[0],
-              service_charge_financial_year: options[0],
-            },
-          ],
-        }));
-      }
-    }
-  }, [formData.propertyRecord.avantan_dinank]);
-
-  useEffect(() => {
-    if (currentStep === 6) {
-      const floorType = formData.propertyRecord.property_floor_type;
-      const serviceChargeAmount =
-        floorType === "LGF" ? 10610 : floorType === "UGF" ? 11005 : 0;
-
-      const allotmentFY = getFinancialYearFromDate(
-        formData.propertyRecord.avantan_dinank
-      );
-      const selectedFY =
-        formData.serviceCharges[0]?.service_charge_financial_year ||
-        allotmentFY;
-      const paymentDate =
-        formData.serviceCharges[0]?.service_charge_payment_date;
-
-      const lateFee = paymentDate
-        ? calculateServiceChargeLateFee(
-            allotmentFY,
-            selectedFY,
-            paymentDate,
-            serviceChargeAmount
-          )
-        : 0;
-
-      const totalServiceCharge = serviceChargeAmount + lateFee;
-
-      setFormData((prev: any) => ({
-        ...prev,
-        serviceCharges: [
-          {
-            ...prev.serviceCharges[0],
-            service_charge_amount: serviceChargeAmount,
-            service_charge_late_fee: lateFee,
-            service_charge_total: totalServiceCharge,
-          },
-        ],
-      }));
-    }
-  }, [
-    currentStep,
-    formData.propertyRecord.property_floor_type,
-    formData.serviceCharges[0]?.service_charge_financial_year,
-    formData.serviceCharges[0]?.service_charge_payment_date,
-    formData.propertyRecord.avantan_dinank,
-  ]);
-
   //
   // ----------------------------- Handlers -----------------------------
   //
   const handleInputChange = (section: string, fieldId: string, value: any) => {
     if (section === "paymentInstallments") {
-      // Update the current payment entry being edited
       setCurrentPaymentEntry((prev: any) => ({
         ...prev,
         [fieldId]: value === "" ? null : value,
       }));
-    } else if (section === "serviceCharges") {
-      if (formData[section].length === 0) {
-        setFormData((prev: any) => ({
-          ...prev,
-          [section]: [{ [fieldId]: value === "" ? null : value }],
-        }));
-      } else {
-        setFormData((prev: any) => ({
-          ...prev,
-          [section]: [
-            {
-              ...prev[section][0],
-              [fieldId]: value === "" ? null : value,
-            },
-          ],
-        }));
-      }
     } else {
       setFormData((prev: any) => ({
         ...prev,
@@ -695,9 +783,7 @@ export default function CreateNewProperty() {
     }
   };
 
-  // Handler for the "Payment" button
   const handleAddPayment = () => {
-    // Validate required fields
     const { installment_amount, interest_amount, payment_date } =
       currentPaymentEntry;
     if (!installment_amount || !interest_amount || !payment_date) {
@@ -705,7 +791,6 @@ export default function CreateNewProperty() {
       return;
     }
 
-    // Add the current payment entry to the paymentInstallments array
     setFormData((prev: any) => ({
       ...prev,
       paymentInstallments: [
@@ -714,7 +799,6 @@ export default function CreateNewProperty() {
       ],
     }));
 
-    // Clear the form fields for the next entry
     setCurrentPaymentEntry({
       installment_amount: "",
       interest_amount: "",
@@ -920,7 +1004,7 @@ export default function CreateNewProperty() {
             ))}
           </div>
 
-          {/* Actual form fields for the current step */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="mt-6">
             <div className="max-h-[calc(100vh-320px)] overflow-y-auto px-2 custom-scrollbar">
               <div className="mb-6">
@@ -933,169 +1017,164 @@ export default function CreateNewProperty() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                {formSteps[currentStep].fields.map((field) => {
-                  let fieldValue: any = "";
-                  if (sectionMap[currentStep] === "paymentInstallments") {
-                    fieldValue = currentPaymentEntry[field.id] || "";
-                  } else if (sectionMap[currentStep] === "serviceCharges") {
-                    fieldValue =
-                      formData[sectionMap[currentStep]][0]?.[field.id] || "";
-                  } else {
-                    fieldValue =
-                      formData[sectionMap[currentStep]][field.id] || "";
-                  }
+              {currentStep === 6 ? (
+                <ServiceChargeStep
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  setErrors={setErrors}
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                  {formSteps[currentStep].fields.map((field) => {
+                    let fieldValue: any = "";
+                    if (sectionMap[currentStep] === "paymentInstallments") {
+                      fieldValue = currentPaymentEntry[field.id] || "";
+                    } else {
+                      fieldValue =
+                        formData[sectionMap[currentStep]][field.id] || "";
+                    }
 
-                  return (
-                    <div key={field.id} className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {field.label}
-                        {field.required && (
-                          <span className="text-red-500 dark:text-red-400 ml-1">
-                            *
-                          </span>
+                    return (
+                      <div key={field.id} className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          {field.label}
+                          {field.required && (
+                            <span className="text-red-500 dark:text-red-400 ml-1">
+                              *
+                            </span>
+                          )}
+                        </label>
+                        {field.readOnly ? (
+                          <input
+                            type={field.type}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 cursor-not-allowed"
+                            value={fieldValue}
+                            disabled
+                          />
+                        ) : field.type === "select" ? (
+                          <select
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
+                            value={fieldValue}
+                          >
+                            <option value="" className="dark:bg-gray-800">
+                              Select option...
+                            </option>
+                            {field.id === "yojna_id"
+                              ? yojnas.map((yojna) => (
+                                  <option
+                                    key={yojna.yojna_id}
+                                    value={yojna.yojna_id}
+                                    className="dark:bg-gray-800"
+                                  >
+                                    {yojna.yojna_name}
+                                  </option>
+                                ))
+                              : field.options?.map((option) => (
+                                  <option
+                                    key={option}
+                                    value={option}
+                                    className="dark:bg-gray-800"
+                                  >
+                                    {option}
+                                  </option>
+                                ))}
+                          </select>
+                        ) : field.type === "textarea" ? (
+                          <textarea
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm min-h-24"
+                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            value={fieldValue}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
+                          />
+                        ) : field.type === "boolean" ? (
+                          <select
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
+                            value={fieldValue}
+                          >
+                            <option value="" className="dark:bg-gray-800">
+                              Select...
+                            </option>
+                            <option value="true" className="dark:bg-gray-800">
+                              Yes
+                            </option>
+                            <option value="false" className="dark:bg-gray-800">
+                              No
+                            </option>
+                          </select>
+                        ) : field.type === "file" ? (
+                          <input
+                            type="file"
+                            accept={field.accept}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.files ? e.target.files[0] : null
+                              )
+                            }
+                          />
+                        ) : field.type === "date" ? (
+                          <input
+                            type="date"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                            value={fieldValue}
+                            max={today}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
+                          />
+                        ) : (
+                          <input
+                            type={field.type}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            value={fieldValue}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
+                          />
                         )}
-                      </label>
-                      {field.readOnly ? (
-                        <input
-                          type={field.type}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 cursor-not-allowed"
-                          value={fieldValue}
-                          disabled
-                        />
-                      ) : field.type === "select" ? (
-                        <select
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
-                          value={fieldValue}
-                        >
-                          <option value="" className="dark:bg-gray-800">
-                            Select option...
-                          </option>
-                          {field.id === "yojna_id"
-                            ? yojnas.map((yojna) => (
-                                <option
-                                  key={yojna.yojna_id}
-                                  value={yojna.yojna_id}
-                                  className="dark:bg-gray-800"
-                                >
-                                  {yojna.yojna_name}
-                                </option>
-                              ))
-                            : field.id === "service_charge_financial_year"
-                            ? financialYearOptions.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                  className="dark:bg-gray-800"
-                                >
-                                  {option}
-                                </option>
-                              ))
-                            : field.options?.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                  className="dark:bg-gray-800"
-                                >
-                                  {option}
-                                </option>
-                              ))}
-                        </select>
-                      ) : field.type === "textarea" ? (
-                        <textarea
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm min-h-24"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          value={fieldValue}
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
-                        />
-                      ) : field.type === "boolean" ? (
-                        <select
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
-                          value={fieldValue}
-                        >
-                          <option value="" className="dark:bg-gray-800">
-                            Select...
-                          </option>
-                          <option value="true" className="dark:bg-gray-800">
-                            Yes
-                          </option>
-                          <option value="false" className="dark:bg-gray-800">
-                            No
-                          </option>
-                        </select>
-                      ) : field.type === "file" ? (
-                        <input
-                          type="file"
-                          accept={field.accept}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.files ? e.target.files[0] : null
-                            )
-                          }
-                        />
-                      ) : field.type === "date" ? (
-                        <input
-                          type="date"
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          value={fieldValue}
-                          max={today}
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
-                        />
-                      ) : (
-                        <input
-                          type={field.type}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          value={fieldValue}
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
-                        />
-                      )}
-                      {errors[field.id] && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors[field.id]}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        {errors[field.id] && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[field.id]}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* Payment Button and Table for Step 4 */}
               {currentStep === 4 && (
                 <div className="mt-6">
                   <button
@@ -1106,7 +1185,6 @@ export default function CreateNewProperty() {
                     Add Payment
                   </button>
 
-                  {/* Payment Table */}
                   {formData.paymentInstallments.length > 0 && (
                     <div className="mt-6 overflow-x-auto">
                       <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
@@ -1177,7 +1255,6 @@ export default function CreateNewProperty() {
                 </div>
               )}
 
-              {/* Installment Plan Summary (Step 3) */}
               {currentStep === 3 && (
                 <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -1283,7 +1360,6 @@ export default function CreateNewProperty() {
               )}
             </div>
 
-            {/* Step Navigation */}
             <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div>
                 {currentStep > 0 && (
