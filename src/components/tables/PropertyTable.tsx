@@ -239,7 +239,10 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
         <div className="max-w-7xl mx-auto p-6">
           <div className="space-y-6 sm:space-y-0 sm:flex sm:items-start sm:gap-6">
             {/* Search and Columns Section */}
-            <div className="flex-1 space-y-4">
+            <div
+            className="flex w-full gap-2"
+            // className=" space-y-4"
+            >
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowColumnSelector(!showColumnSelector)}
@@ -294,52 +297,54 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
               </div>
 
               {/* Search Input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={
-                    searchField === "property_unique_id"
-                      ? "Search by Property ID..."
-                      : "Search by Owner Name..."
-                  }
-                  className="w-full pl-11 pr-4 py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
-                <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+              <div className=" w-full">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={
+                      searchField === "property_unique_id"
+                        ? "Search by Property ID..."
+                        : "Search by Owner Name..."
+                    }
+                    className="pl-11 w-full pr-4 py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  />
+                  <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
               </div>
-            </div>
 
-            {/* Filters Section */}
-            <div className="flex items-center gap-3">
-              <select
-                value={searchField}
-                onChange={(e) =>
-                  setSearchField(
-                    e.target.value as "property_unique_id" | "avanti_ka_naam"
-                  )
-                }
-                className="min-w-[140px] px-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
-              >
-                <option value="property_unique_id">Property ID</option>
-                <option value="avanti_ka_naam">Owner Name</option>
-              </select>
-
-              <div className="relative">
+              {/* Filters Section */}
+              {/* <div className="flex items-center gap-3"> */}
                 <select
-                  value={selectedYojna}
-                  onChange={(e) => setSelectedYojna(e.target.value)}
-                  className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
+                  value={searchField}
+                  onChange={(e) =>
+                    setSearchField(
+                      e.target.value as "property_unique_id" | "avanti_ka_naam"
+                    )
+                  }
+                  className="min-w-[140px] px-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
                 >
-                  <option value="">All Yojnas</option>
-                  {yojnas.map((yojna) => (
-                    <option key={yojna.yojna_id} value={yojna.yojna_id}>
-                      {yojna.yojna_name}
-                    </option>
-                  ))}
+                  <option value="property_unique_id">Property ID</option>
+                  <option value="avanti_ka_naam">Owner Name</option>
                 </select>
-                <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
-              </div>
+
+                <div className="relative">
+                  <select
+                    value={selectedYojna}
+                    onChange={(e) => setSelectedYojna(e.target.value)}
+                    className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
+                  >
+                    <option value="">All Yojnas</option>
+                    {yojnas.map((yojna) => (
+                      <option key={yojna.yojna_id} value={yojna.yojna_id}>
+                        {yojna.yojna_name}
+                      </option>
+                    ))}
+                  </select>
+                  <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              {/* </div> */}
             </div>
           </div>
         </div>
@@ -614,7 +619,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                           </label>
                           <textarea
                             value={
-                              editedProperty.propertyRecord.avanti_ka_sthayi_pata
+                              editedProperty.propertyRecord
+                                .avanti_ka_sthayi_pata
                             }
                             onChange={(e) =>
                               setEditedProperty({
@@ -687,7 +693,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                         <input
                           type="text"
                           value={
-                            editedProperty.propertyRecord.avanti_sampatti_sankhya
+                            editedProperty.propertyRecord
+                              .avanti_sampatti_sankhya
                           }
                           onChange={(e) =>
                             setEditedProperty({
@@ -991,8 +998,9 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                                       const updatedInstallments = [
                                         ...editedProperty.installments,
                                       ];
-                                      updatedInstallments[index].payment_number =
-                                        e.target.value;
+                                      updatedInstallments[
+                                        index
+                                      ].payment_number = e.target.value;
                                       setEditedProperty({
                                         ...editedProperty,
                                         installments: updatedInstallments,
@@ -1289,8 +1297,9 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                                       const updatedCharges = [
                                         ...editedProperty.serviceCharges,
                                       ];
-                                      updatedCharges[index].service_charge_amount =
-                                        e.target.value;
+                                      updatedCharges[
+                                        index
+                                      ].service_charge_amount = e.target.value;
                                       setEditedProperty({
                                         ...editedProperty,
                                         serviceCharges: updatedCharges,
@@ -1307,7 +1316,9 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                                       const updatedCharges = [
                                         ...editedProperty.serviceCharges,
                                       ];
-                                      updatedCharges[index].service_charge_late_fee =
+                                      updatedCharges[
+                                        index
+                                      ].service_charge_late_fee =
                                         e.target.value;
                                       setEditedProperty({
                                         ...editedProperty,
@@ -1495,7 +1506,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                       </h5>
                       <p className="text-base font-medium text-gray-900">
                         {
-                          selectedProperty.propertyRecord.avanti_sampatti_sankhya
+                          selectedProperty.propertyRecord
+                            .avanti_sampatti_sankhya
                         }
                       </p>
                     </div>
@@ -1725,7 +1737,9 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                                   {formatValue(charge.service_charge_late_fee)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatValue(charge.service_charge_payment_date)}
+                                  {formatValue(
+                                    charge.service_charge_payment_date
+                                  )}
                                 </td>
                               </tr>
                             )

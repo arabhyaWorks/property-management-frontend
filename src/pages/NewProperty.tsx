@@ -33,67 +33,184 @@ const baseFinancialYearOptions = [
 
 const formSteps: FormStep[] = [
   {
-    title: "Basic Information",
+    title: "मूलभूत जानकारी",
     fields: [
-      { id: "yojna_id", label: "योजना का नाम", type: "select", options: [], required: true },
-      { id: "avanti_ka_naam", label: "आवंटी का नाम", type: "text", required: true },
-      { id: "pita_pati_ka_naam", label: "पिता/पति का नाम", type: "text", required: true },
-      { id: "avanti_ka_sthayi_pata", label: "आवंटी का स्थायी पता", type: "textarea", required: true },
-      { id: "avanti_ka_vartaman_pata", label: "आवंटी का वर्तमान पता", type: "textarea", required: true },
+      {
+        id: "yojna_id",
+        label: "योजना का नाम",
+        type: "select",
+        options: [],
+        required: true,
+      },
+      {
+        id: "avanti_ka_naam",
+        label: "आवंटी का नाम",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "pita_pati_ka_naam",
+        label: "पिता/पति का नाम",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "avanti_ka_sthayi_pata",
+        label: "आवंटी का स्थायी पता",
+        type: "textarea",
+        required: true,
+      },
+      {
+        id: "avanti_ka_vartaman_pata",
+        label: "आवंटी का वर्तमान पता",
+        type: "textarea",
+        required: true,
+      },
       { id: "mobile_no", label: "मोबाइल नंबर", type: "text", required: false },
       { id: "aadhar_number", label: "आधार नंबर", type: "text" },
-      { id: "aadhar_photo", label: "आधार फोटो (max size 200kb)", type: "file", accept: "image/*", maxSize: 200 * 1024 },
-      { id: "documents", label: "दस्तावेज़ (PDF only)", type: "file", accept: "application/pdf" },
+      {
+        id: "aadhar_photo",
+        label: "आधार फोटो (अधिकतम आकार 200kb)",
+        type: "file",
+        accept: "image/*",
+        maxSize: 200 * 1024,
+      },
+      {
+        id: "documents",
+        label: "दस्तावेज़ (केवल PDF)",
+        type: "file",
+        accept: "application/pdf",
+      },
     ],
   },
   {
-    title: "Property Details",
+    title: "संपत्ति विवरण",
     fields: [
-      { id: "sampatti_sreni", label: "संपत्ति श्रेणी", type: "select", options: ["आवासीय", "वाणिज्यिक"], required: true },
-      { id: "avanti_sampatti_sankhya", label: "संपत्ति संख्या", type: "text", required: true },
-      { id: "property_floor_type", label: "फ्लोर प्रकार", type: "select", options: ["UGF", "LGF"], required: true },
+      {
+        id: "sampatti_sreni",
+        label: "संपत्ति श्रेणी",
+        type: "select",
+        options: ["आवासीय", "वाणिज्यिक"],
+        required: true,
+      },
+      {
+        id: "avanti_sampatti_sankhya",
+        label: "संपत्ति संख्या",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "property_floor_type",
+        label: "फ्लोर प्रकार",
+        type: "select",
+        options: ["UGF", "LGF"],
+        required: true,
+      },
       { id: "kshetrafal", label: "क्षेत्रफल (वर्ग मीटर)", type: "number" },
       { id: "kabja_dinank", label: "कब्जा दिनांक", type: "date" },
       { id: "bhavan_nirman", label: "भवन निर्माण", type: "boolean" },
     ],
   },
   {
-    title: "Financial Information",
+    title: "वित्तीय जानकारी",
     fields: [
-      { id: "panjikaran_dhanrashi", label: "पंजीकरण धनराशि", type: "number", required: true },
-      { id: "panjikaran_dinank", label: "पंजीकरण दिनांक", type: "date", required: true },
-      { id: "avantan_dhanrashi", label: "आवंटन धनराशि", type: "number", required: true },
-      { id: "avantan_dinank", label: "आवंटन दिनांक", type: "date", required: true },
-      { id: "vikray_mulya", label: "विक्रय शुल्क", type: "number", required: true },
-      { id: "auction_keemat", label: "नीलामी कीमत", type: "number" },
+      {
+        id: "panjikaran_dhanrashi",
+        label: "पंजीकरण धनराशि",
+        type: "number",
+        required: true,
+      },
+      {
+        id: "avantan_dhanrashi",
+        label: "आवंटन धनराशि",
+        type: "number",
+        required: true,
+      },
+      {
+        id: "vikray_mulya",
+        label: "विक्रय शुल्क",
+        type: "number",
+        required: true,
+      },
+      {
+        id: "panjikaran_dinank",
+        label: "पंजीकरण दिनांक",
+        type: "date",
+        required: true,
+      },
+      {
+        id: "avantan_dinank",
+        label: "आवंटन दिनांक",
+        type: "date",
+        required: true,
+      },
+      { id: "auction_keemat", label: "नीलामी शुल्क", type: "number" },
       { id: "lease_rent_dhanrashi", label: "लीज रेंट धनराशि", type: "number" },
       { id: "free_hold_dhanrashi", label: "फ्री होल्ड धनराशि", type: "number" },
     ],
   },
   {
-    title: "Installment Plan",
+    title: "किस्त योजना",
     fields: [
-      { id: "interest_rate", label: "ब्याज दर (%)", type: "number", required: true, readOnly: true },
-      { id: "time_period", label: "समय अवधि (वर्ष)", type: "number", required: true, readOnly: true },
-      { id: "ideal_number_of_installments", label: "किश्तों की संख्या", type: "number", required: true, readOnly: true },
+      {
+        id: "interest_rate",
+        label: "ब्याज दर (%)",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
+      {
+        id: "time_period",
+        label: "समय अवधि (वर्ष)",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
+      {
+        id: "ideal_number_of_installments",
+        label: "किस्तों की संख्या",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
     ],
   },
   {
-    title: "Payment Installment Details",
+    title: "भुगतान किश्त विवरण",
     fields: [
-      { id: "installment_amount", label: "किस्त जमा धनराशि", type: "number", required: true },
-      { id: "interest_amount", label: "किस्त जमा ब्याज धनराशि", type: "number", required: true },
-      { id: "late_fee", label: "विलंब ब्याज धनराशि", type: "number", required: true, readOnly: true },
+      {
+        id: "installment_amount",
+        label: "किस्त जमा धनराशि",
+        type: "number",
+        required: true,
+      },
+      {
+        id: "interest_amount",
+        label: "किस्त जमा ब्याज धनराशि",
+        type: "number",
+        required: true,
+      },
+      {
+        id: "late_fee",
+        label: "विलंब ब्याज धनराशि",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
       { id: "payment_date", label: "दिनांक", type: "date", required: true },
     ],
   },
   {
-    title: "Additional Charges & Details",
+    title: "अतिरिक्त शुल्क और विवरण",
     fields: [
       { id: "park_charge", label: "पार्क शुल्क", type: "number" },
       { id: "corner_charge", label: "कॉर्नर शुल्क", type: "number" },
-      { id: "atirikt_bhoomi_ki_dhanrashi", label: "अतिरिक्त भूमि की धनराशि", type: "number" },
-      { id: "punarjivit_shulk", label: "पुनर्जनन शुल्क", type: "number" },
+      {
+        id: "atirikt_bhoomi_ki_dhanrashi",
+        label: "अतिरिक्त भूमि की धनराशि",
+        type: "number",
+      },
+      { id: "punarjivit_shulk", label: "पुनर्जीवित शुल्क", type: "number" },
       { id: "praman_patra_shulk", label: "प्रमाण पत्र शुल्क", type: "number" },
       { id: "vigyapan_shulk", label: "विज्ञापन शुल्क", type: "number" },
       { id: "nibandhan_shulk", label: "निबंधन शुल्क", type: "number" },
@@ -103,12 +220,35 @@ const formSteps: FormStep[] = [
     ],
   },
   {
-    title: "Service Charge Details",
+    title: "सेवा शुल्क विवरण",
     fields: [
-      { id: "service_charge_financial_year", label: "वित्तीय वर्ष", type: "select", options: [], required: true },
-      { id: "service_charge_amount", label: "सेवा शुल्क राशि", type: "number", required: true, readOnly: true },
-      { id: "service_charge_late_fee", label: "सेवा शुल्क विलंब शुल्क", type: "number", required: true, readOnly: true },
-      { id: "service_charge_payment_date", label: "सेवा शुल्क भुगतान तिथि", type: "date", required: true },
+      {
+        id: "service_charge_financial_year",
+        label: "वित्तीय वर्ष",
+        type: "select",
+        options: [],
+        required: true,
+      },
+      {
+        id: "service_charge_amount",
+        label: "सेवा शुल्क राशि",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
+      {
+        id: "service_charge_late_fee",
+        label: "सेवा शुल्क विलंब शुल्क",
+        type: "number",
+        required: true,
+        readOnly: true,
+      },
+      {
+        id: "service_charge_payment_date",
+        label: "सेवा शुल्क भुगतान तिथि",
+        type: "date",
+        required: true,
+      },
     ],
   },
 ];
@@ -130,7 +270,11 @@ const formatIndianNumber = (num: number): string => {
 const addMonths = (dateString: string, months: number): string => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  const newDate = new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
+  const newDate = new Date(
+    date.getFullYear(),
+    date.getMonth() + months,
+    date.getDate()
+  );
   if (date.getDate() !== newDate.getDate()) {
     newDate.setDate(0); // Set to last day of previous month if day overflows
   }
@@ -140,11 +284,17 @@ const addMonths = (dateString: string, months: number): string => {
   return `${year}-${month}-${day}`;
 };
 
-const calculateLateFee = (dueDate: string, paymentDate: string, lfpd: number): number => {
+const calculateLateFee = (
+  dueDate: string,
+  paymentDate: string,
+  lfpd: number
+): number => {
   const due = new Date(dueDate);
   const payment = new Date(paymentDate);
   if (payment > due) {
-    const daysDelayed = Math.ceil((payment.getTime() - due.getTime()) / (1000 * 3600 * 24));
+    const daysDelayed = Math.ceil(
+      (payment.getTime() - due.getTime()) / (1000 * 3600 * 24)
+    );
     return daysDelayed * lfpd;
   }
   return 0;
@@ -198,14 +348,16 @@ export default function CreateNewProperty() {
         const data = await response.json();
         setYojnas(data.data);
       } catch (error) {
-        console.error("Error fetching yojnas:", error);
+        console.error("योोजनाओं को प्राप्त करने में त्रुटि:", error);
       }
     };
     fetchYojnas();
   }, []);
 
   useEffect(() => {
-    const selectedYojna = yojnas.find((y) => y.yojna_id === formData.propertyRecord.yojna_id);
+    const selectedYojna = yojnas.find(
+      (y) => y.yojna_id === formData.propertyRecord.yojna_id
+    );
     if (selectedYojna) {
       setFormData((prev: any) => ({
         ...prev,
@@ -236,16 +388,24 @@ export default function CreateNewProperty() {
 
   // Automatic Calculations
   useEffect(() => {
-    const auctionKeemat = parseFloat(formData.propertyRecord.auction_keemat || "0");
-    const panjikaranDhanrashi = parseFloat(formData.propertyRecord.panjikaran_dhanrashi || "0");
-    const avantanDhanrashi = parseFloat(formData.propertyRecord.avantan_dhanrashi || "0");
-    const calculatedAvshesh = auctionKeemat - (panjikaranDhanrashi + avantanDhanrashi);
+    const auctionKeemat = parseFloat(
+      formData.propertyRecord.auction_keemat || "0"
+    );
+    const panjikaranDhanrashi = parseFloat(
+      formData.propertyRecord.panjikaran_dhanrashi || "0"
+    );
+    const avantanDhanrashi = parseFloat(
+      formData.propertyRecord.avantan_dhanrashi || "0"
+    );
+    const calculatedAvshesh =
+      auctionKeemat - (panjikaranDhanrashi + avantanDhanrashi);
 
     setFormData((prev: any) => ({
       ...prev,
       installmentPlan: {
         ...prev.installmentPlan,
-        avshesh_dhanrashi: calculatedAvshesh > 0 ? calculatedAvshesh.toFixed(2) : "0.00",
+        avshesh_dhanrashi:
+          calculatedAvshesh > 0 ? calculatedAvshesh.toFixed(2) : "0.00",
       },
     }));
   }, [
@@ -257,12 +417,21 @@ export default function CreateNewProperty() {
   // Prepopulate installment_amount and interest_amount
   useEffect(() => {
     if (currentStep === 4 && !currentPaymentEntry.installment_amount) {
-      const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
-      const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
-      const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
-      const idealNumberOfInstallments = parseInt(formData.installmentPlan.ideal_number_of_installments || "1");
+      const avsheshDhanrashi = parseFloat(
+        formData.installmentPlan.avshesh_dhanrashi || "0"
+      );
+      const interestRate = parseFloat(
+        formData.installmentPlan.interest_rate || "0"
+      );
+      const timePeriod = parseFloat(
+        formData.installmentPlan.time_period || "0"
+      );
+      const idealNumberOfInstallments = parseInt(
+        formData.installmentPlan.ideal_number_of_installments || "1"
+      );
 
-      const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
+      const totalInterestAmount =
+        (avsheshDhanrashi * interestRate * timePeriod) / 100;
       const adjustedInterest = totalInterestAmount / 2;
       const idealKishtMool = avsheshDhanrashi / idealNumberOfInstallments;
       const idealKishtByaj = adjustedInterest / idealNumberOfInstallments;
@@ -273,20 +442,39 @@ export default function CreateNewProperty() {
         interest_amount: idealKishtByaj.toFixed(2),
       }));
     }
-  }, [currentStep, formData.installmentPlan, currentPaymentEntry.installment_amount]);
+  }, [
+    currentStep,
+    formData.installmentPlan,
+    currentPaymentEntry.installment_amount,
+  ]);
 
   // Calculate late_fee for current payment entry
   useEffect(() => {
-    if (currentStep === 4 && formData.installmentPlan.first_installment_due_date) {
+    if (
+      currentStep === 4 &&
+      formData.installmentPlan.first_installment_due_date
+    ) {
       const installmentNumber = formData.paymentInstallments.length + 1;
-      const dueDate = addMonths(formData.installmentPlan.first_installment_due_date, (installmentNumber - 1) * 3);
+      const dueDate = addMonths(
+        formData.installmentPlan.first_installment_due_date,
+        (installmentNumber - 1) * 3
+      );
       const paymentDate = currentPaymentEntry.payment_date;
-      const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
-      const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
-      const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
-      const idealNumberOfInstallments = parseInt(formData.installmentPlan.ideal_number_of_installments || "1");
+      const avsheshDhanrashi = parseFloat(
+        formData.installmentPlan.avshesh_dhanrashi || "0"
+      );
+      const interestRate = parseFloat(
+        formData.installmentPlan.interest_rate || "0"
+      );
+      const timePeriod = parseFloat(
+        formData.installmentPlan.time_period || "0"
+      );
+      const idealNumberOfInstallments = parseInt(
+        formData.installmentPlan.ideal_number_of_installments || "1"
+      );
 
-      const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
+      const totalInterestAmount =
+        (avsheshDhanrashi * interestRate * timePeriod) / 100;
       const adjustedInterest = totalInterestAmount / 2;
       const kulYog = avsheshDhanrashi + adjustedInterest;
       const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
@@ -300,7 +488,12 @@ export default function CreateNewProperty() {
         }));
       }
     }
-  }, [currentPaymentEntry.payment_date, formData.installmentPlan.first_installment_due_date, formData.paymentInstallments.length, currentStep]);
+  }, [
+    currentPaymentEntry.payment_date,
+    formData.installmentPlan.first_installment_due_date,
+    formData.paymentInstallments.length,
+    currentStep,
+  ]);
 
   // Handlers
   const handleInputChange = (section: string, fieldId: string, value: any) => {
@@ -325,7 +518,7 @@ export default function CreateNewProperty() {
       if (file.size > maxSize) {
         setErrors((prev) => ({
           ...prev,
-          aadhar_photo: "File size must not exceed 200KB",
+          aadhar_photo: "फ़ाइल का आकार 200KB से अधिक नहीं होना चाहिए",
         }));
         setFormData((prev: any) => ({
           ...prev,
@@ -345,14 +538,18 @@ export default function CreateNewProperty() {
   };
 
   const handleAddPayment = () => {
-    const { installment_amount, interest_amount, payment_date } = currentPaymentEntry;
+    const { installment_amount, interest_amount, payment_date } =
+      currentPaymentEntry;
     if (!installment_amount || !interest_amount || !payment_date) {
-      alert("Please fill in all required fields before adding a payment.");
+      alert("कृपया भुगतान जोड़ने से पहले सभी आवश्यक क्षेत्र भरें।");
       return;
     }
 
     const installmentNumber = formData.paymentInstallments.length + 1;
-    const dueDate = addMonths(formData.installmentPlan.first_installment_due_date, (installmentNumber - 1) * 3);
+    const dueDate = addMonths(
+      formData.installmentPlan.first_installment_due_date,
+      (installmentNumber - 1) * 3
+    );
 
     setFormData((prev: any) => ({
       ...prev,
@@ -385,17 +582,26 @@ export default function CreateNewProperty() {
 
     if (currentStep !== 6) return;
 
-    const confirmSubmission = window.confirm("Are you sure you want to submit the property details?");
+    const confirmSubmission = window.confirm(
+      "क्या आप संपत्ति विवरण जमा करने के लिए निश्चित हैं?"
+    );
     if (!confirmSubmission) return;
 
     setIsSubmitting(true);
 
-    const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
-    const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
+    const avsheshDhanrashi = parseFloat(
+      formData.installmentPlan.avshesh_dhanrashi || "0"
+    );
+    const interestRate = parseFloat(
+      formData.installmentPlan.interest_rate || "0"
+    );
     const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
-    const idealNumberOfInstallments = parseInt(formData.installmentPlan.ideal_number_of_installments || "1");
+    const idealNumberOfInstallments = parseInt(
+      formData.installmentPlan.ideal_number_of_installments || "1"
+    );
 
-    const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
+    const totalInterestAmount =
+      (avsheshDhanrashi * interestRate * timePeriod) / 100;
     const adjustedInterest = totalInterestAmount / 2;
     const kulYog = avsheshDhanrashi + adjustedInterest;
     const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
@@ -406,11 +612,20 @@ export default function CreateNewProperty() {
     const payload = {
       propertyRecord: {
         ...formData.propertyRecord,
-        bhavan_nirman: formData.propertyRecord.bhavan_nirman === "true" ? "Yes" : "No",
-        panjikaran_dinank: formatDateToDDMMYYYY(formData.propertyRecord.panjikaran_dinank),
-        avantan_dinank: formatDateToDDMMYYYY(formData.propertyRecord.avantan_dinank),
-        kabja_dinank: formatDateToDDMMYYYY(formData.propertyRecord.kabja_dinank),
-        nibandhan_dinank: formatDateToDDMMYYYY(formData.propertyRecord.nibandhan_dinank),
+        bhavan_nirman:
+          formData.propertyRecord.bhavan_nirman === "true" ? "हाँ" : "नहीं",
+        panjikaran_dinank: formatDateToDDMMYYYY(
+          formData.propertyRecord.panjikaran_dinank
+        ),
+        avantan_dinank: formatDateToDDMMYYYY(
+          formData.propertyRecord.avantan_dinank
+        ),
+        kabja_dinank: formatDateToDDMMYYYY(
+          formData.propertyRecord.kabja_dinank
+        ),
+        nibandhan_dinank: formatDateToDDMMYYYY(
+          formData.propertyRecord.nibandhan_dinank
+        ),
       },
       installmentPlan: {
         avshesh_dhanrashi: avsheshDhanrashi,
@@ -425,27 +640,46 @@ export default function CreateNewProperty() {
         ideal_kisht_mool: idealKishtMool,
         ideal_kisht_byaj: idealKishtByaj,
         late_fee_per_day: lateFeePerDay,
-        first_installment_due_date: formatDateToDDMMYYYY(formData.installmentPlan.first_installment_due_date),
+        first_installment_due_date: formatDateToDDMMYYYY(
+          formData.installmentPlan.first_installment_due_date
+        ),
       },
       paymentInstallments: formData.paymentInstallments.map((payment: any) => ({
         payment_number: payment.payment_number,
-        payment_amount: parseFloat(payment.installment_amount || "0") + parseFloat(payment.interest_amount || "0"),
+        payment_amount:
+          parseFloat(payment.installment_amount || "0") +
+          parseFloat(payment.interest_amount || "0"),
         kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
         kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
         payment_due_date: formatDateToDDMMYYYY(payment.due_date),
         payment_date: formatDateToDDMMYYYY(payment.payment_date),
-        number_of_days_delayed: payment.payment_date && payment.due_date
-          ? Math.max(0, Math.ceil((new Date(payment.payment_date).getTime() - new Date(payment.due_date).getTime()) / (1000 * 3600 * 24)))
-          : 0,
+        number_of_days_delayed:
+          payment.payment_date && payment.due_date
+            ? Math.max(
+                0,
+                Math.ceil(
+                  (new Date(payment.payment_date).getTime() -
+                    new Date(payment.due_date).getTime()) /
+                    (1000 * 3600 * 24)
+                )
+              )
+            : 0,
         late_fee_amount: parseFloat(payment.late_fee || "0"),
-        total_payment_amount_with_late_fee: parseFloat(payment.installment_amount || "0") + parseFloat(payment.interest_amount || "0") + parseFloat(payment.late_fee || "0"),
+        total_payment_amount_with_late_fee:
+          parseFloat(payment.installment_amount || "0") +
+          parseFloat(payment.interest_amount || "0") +
+          parseFloat(payment.late_fee || "0"),
       })),
       serviceCharges: formData.serviceCharges.map((charge: any) => ({
         service_charge_financial_year: charge.service_charge_financial_year,
         service_charge_amount: charge.service_charge_amount,
         service_charge_late_fee: charge.service_charge_late_fee,
-        service_charge_total: (charge.service_charge_amount || 0) + (charge.service_charge_late_fee || 0),
-        service_charge_payment_date: formatDateToDDMMYYYY(charge.service_charge_payment_date),
+        service_charge_total:
+          (charge.service_charge_amount || 0) +
+          (charge.service_charge_late_fee || 0),
+        service_charge_payment_date: formatDateToDDMMYYYY(
+          charge.service_charge_payment_date
+        ),
       })),
     };
 
@@ -472,7 +706,9 @@ export default function CreateNewProperty() {
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Create New Property</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              नई संपत्ति बनाएँ
+            </h2>
             <button className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               <X className="h-5 w-5" />
             </button>
@@ -493,7 +729,9 @@ export default function CreateNewProperty() {
                 >
                   {index + 1}
                 </div>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{step.title}</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  {step.title}
+                </p>
               </div>
             ))}
           </div>
@@ -506,7 +744,7 @@ export default function CreateNewProperty() {
                   {formSteps[currentStep].title}
                 </h3>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Fill in the details for {formSteps[currentStep].title.toLowerCase()}.
+                  {formSteps[currentStep].title} के लिए विवरण भरें।
                 </p>
               </div>
 
@@ -524,14 +762,19 @@ export default function CreateNewProperty() {
                     if (sectionMap[currentStep] === "paymentInstallments") {
                       fieldValue = currentPaymentEntry[field.id] || "";
                     } else {
-                      fieldValue = formData[sectionMap[currentStep]][field.id] || "";
+                      fieldValue =
+                        formData[sectionMap[currentStep]][field.id] || "";
                     }
 
                     return (
                       <div key={field.id} className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           {field.label}
-                          {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
+                          {field.required && (
+                            <span className="text-red-500 dark:text-red-400 ml-1">
+                              *
+                            </span>
+                          )}
                         </label>
                         {field.readOnly ? (
                           <input
@@ -543,18 +786,34 @@ export default function CreateNewProperty() {
                         ) : field.type === "select" ? (
                           <select
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                            onChange={(e) => handleInputChange(sectionMap[currentStep], field.id, e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
                             value={fieldValue}
                           >
-                            <option value="" className="dark:bg-gray-800">Select option...</option>
+                            <option value="" className="dark:bg-gray-800">
+                              विकल्प चुनें...
+                            </option>
                             {field.id === "yojna_id"
                               ? yojnas.map((yojna) => (
-                                  <option key={yojna.yojna_id} value={yojna.yojna_id} className="dark:bg-gray-800">
+                                  <option
+                                    key={yojna.yojna_id}
+                                    value={yojna.yojna_id}
+                                    className="dark:bg-gray-800"
+                                  >
                                     {yojna.yojna_name}
                                   </option>
                                 ))
                               : field.options?.map((option) => (
-                                  <option key={option} value={option} className="dark:bg-gray-800">
+                                  <option
+                                    key={option}
+                                    value={option}
+                                    className="dark:bg-gray-800"
+                                  >
                                     {option}
                                   </option>
                                 ))}
@@ -562,19 +821,37 @@ export default function CreateNewProperty() {
                         ) : field.type === "textarea" ? (
                           <textarea
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm min-h-24"
-                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            placeholder={`${field.label} दर्ज करें`}
                             value={fieldValue}
-                            onChange={(e) => handleInputChange(sectionMap[currentStep], field.id, e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
                           />
                         ) : field.type === "boolean" ? (
                           <select
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                            onChange={(e) => handleInputChange(sectionMap[currentStep], field.id, e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
                             value={fieldValue}
                           >
-                            <option value="" className="dark:bg-gray-800">Select...</option>
-                            <option value="true" className="dark:bg-gray-800">Yes</option>
-                            <option value="false" className="dark:bg-gray-800">No</option>
+                            <option value="" className="dark:bg-gray-800">
+                              चुनें...
+                            </option>
+                            <option value="true" className="dark:bg-gray-800">
+                              हाँ
+                            </option>
+                            <option value="false" className="dark:bg-gray-800">
+                              नहीं
+                            </option>
                           </select>
                         ) : field.type === "file" ? (
                           <input
@@ -582,7 +859,11 @@ export default function CreateNewProperty() {
                             accept={field.accept}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
                             onChange={(e) =>
-                              handleInputChange(sectionMap[currentStep], field.id, e.target.files ? e.target.files[0] : null)
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.files ? e.target.files[0] : null
+                              )
                             }
                           />
                         ) : field.type === "date" ? (
@@ -591,30 +872,57 @@ export default function CreateNewProperty() {
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
                             value={fieldValue}
                             max={today}
-                            onChange={(e) => handleInputChange(sectionMap[currentStep], field.id, e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
                           />
                         ) : (
                           <input
                             type={field.type}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            placeholder={`${field.label} दर्ज करें`}
                             value={fieldValue}
-                            onChange={(e) => handleInputChange(sectionMap[currentStep], field.id, e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                sectionMap[currentStep],
+                                field.id,
+                                e.target.value
+                              )
+                            }
                           />
                         )}
-                        {errors[field.id] && <p className="text-red-500 text-xs mt-1">{errors[field.id]}</p>}
+                        {errors[field.id] && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[field.id]}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
                 </div>
               )}
 
-              {currentStep === 4 && formData.installmentPlan.first_installment_due_date && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Installment Number: {formData.paymentInstallments.length + 1}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Due Date: {formatDateToDDMMYYYY(addMonths(formData.installmentPlan.first_installment_due_date, formData.paymentInstallments.length * 3))}</p>
-                </div>
-              )}
+              {currentStep === 4 &&
+                formData.installmentPlan.first_installment_due_date && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      किस्त संख्या: {formData.paymentInstallments.length + 1}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      नियत तिथि:{" "}
+                      {formatDateToDDMMYYYY(
+                        addMonths(
+                          formData.installmentPlan.first_installment_due_date,
+                          formData.paymentInstallments.length * 3
+                        )
+                      )}
+                    </p>
+                  </div>
+                )}
 
               {currentStep === 4 && (
                 <div className="mt-6">
@@ -623,7 +931,7 @@ export default function CreateNewProperty() {
                     onClick={handleAddPayment}
                     className="px-5 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-700 font-medium transition-colors flex items-center shadow-sm"
                   >
-                    Add Payment
+                    भुगतान जोड़ें
                   </button>
 
                   {formData.paymentInstallments.length > 0 && (
@@ -631,33 +939,74 @@ export default function CreateNewProperty() {
                       <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-gray-700">
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Installment Number</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Due Date</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Installment Amount</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Interest Amount</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Late Fee</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Payment Date</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Total Payment Amount</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              किस्त संख्या
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              नियत तिथि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              किस्त धनराशि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              ब्याज धनराशि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              विलंब शुल्क
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              भुगतान तिथि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              कुल भुगतान राशि
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {formData.paymentInstallments.map((payment: any, index: number) => {
-                            const totalPaymentAmount =
-                              parseFloat(payment.installment_amount || "0") +
-                              parseFloat(payment.interest_amount || "0") +
-                              parseFloat(payment.late_fee || "0");
-                            return (
-                              <tr key={index} className="border-t border-gray-200 dark:border-gray-700">
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{payment.payment_number}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatDateToDDMMYYYY(payment.due_date)}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.installment_amount || "0"))}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.interest_amount || "0"))}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.late_fee || "0"))}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatDateToDDMMYYYY(payment.payment_date)}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(totalPaymentAmount)}</td>
-                              </tr>
-                            );
-                          })}
+                          {formData.paymentInstallments.map(
+                            (payment: any, index: number) => {
+                              const totalPaymentAmount =
+                                parseFloat(payment.installment_amount || "0") +
+                                parseFloat(payment.interest_amount || "0") +
+                                parseFloat(payment.late_fee || "0");
+                              return (
+                                <tr
+                                  key={index}
+                                  className="border-t border-gray-200 dark:border-gray-700"
+                                >
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {payment.payment_number}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatDateToDDMMYYYY(payment.due_date)}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatIndianNumber(
+                                      parseFloat(
+                                        payment.installment_amount || "0"
+                                      )
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatIndianNumber(
+                                      parseFloat(payment.interest_amount || "0")
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatIndianNumber(
+                                      parseFloat(payment.late_fee || "0")
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatDateToDDMMYYYY(payment.payment_date)}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatIndianNumber(totalPaymentAmount)}
+                                  </td>
+                                </tr>
+                              );
+                            }
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -667,60 +1016,113 @@ export default function CreateNewProperty() {
 
               {currentStep === 3 && (
                 <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Installment Plan Summary</h4>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    किश्त योजना सारांश
+                  </h4>
                   {(() => {
-                    const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
-                    const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
-                    const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
-                    const idealNumberOfInstallments = parseInt(formData.installmentPlan.ideal_number_of_installments || "1");
+                    const avsheshDhanrashi = parseFloat(
+                      formData.installmentPlan.avshesh_dhanrashi || "0"
+                    );
+                    const interestRate = parseFloat(
+                      formData.installmentPlan.interest_rate || "0"
+                    );
+                    const timePeriod = parseFloat(
+                      formData.installmentPlan.time_period || "0"
+                    );
+                    const idealNumberOfInstallments = parseInt(
+                      formData.installmentPlan.ideal_number_of_installments ||
+                        "1",
+                      10
+                    );
 
-                    const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
+                    const totalInterestAmount =
+                      (avsheshDhanrashi * interestRate * timePeriod) / 100;
                     const adjustedInterest = totalInterestAmount / 2;
                     const kulYog = avsheshDhanrashi + adjustedInterest;
-                    const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
-                    const idealKishtMool = avsheshDhanrashi / idealNumberOfInstallments;
-                    const idealKishtByaj = adjustedInterest / idealNumberOfInstallments;
+                    const idealInstallmentAmount =
+                      kulYog / idealNumberOfInstallments;
+                    const idealKishtMool =
+                      avsheshDhanrashi / idealNumberOfInstallments;
+                    const idealKishtByaj =
+                      adjustedInterest / idealNumberOfInstallments;
                     const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365;
 
                     return (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">अवशेष धनराशि</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(avsheshDhanrashi)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            अवशेष धनराशि
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(avsheshDhanrashi)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">कुल ब्याज राशि (एक वर्ष)</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(totalInterestAmount)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            कुल ब्याज राशि (एक वर्ष)
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(totalInterestAmount)}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             ब्याज राशि (छह महीने)
-                            <span className="ml-2 text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(adjustedInterest)}</span>
+                            <span className="ml-2 text-lg font-semibold text-gray-900 dark:text-white">
+                              {formatIndianNumber(adjustedInterest)}
+                            </span>
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">कुल योग</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(kulYog)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            कुल योग
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(kulYog)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">तिमहि किस्त धनराशी</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(idealInstallmentAmount)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            तिमहि किस्त धनराशी
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(idealInstallmentAmount)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">किस्त मूल धनराशी</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(idealKishtMool)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            किस्त मूल धनराशी
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(idealKishtMool)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">किस्त ब्याज धनराशी</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(idealKishtByaj)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            किस्त ब्याज धनराशी
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(idealKishtByaj)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">प्रति दिन विलंब धनराशी</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(lateFeePerDay)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            प्रति दिन विलंब धनराशी
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatIndianNumber(lateFeePerDay)}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">First Installment Due Date</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDateToDDMMYYYY(formData.installmentPlan.first_installment_due_date)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            प्रथम किश्त नियत तिथि
+                          </p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatDateToDDMMYYYY(
+                              formData.installmentPlan
+                                .first_installment_due_date
+                            )}
+                          </p>
                         </div>
                       </div>
                     );
@@ -743,9 +1145,13 @@ export default function CreateNewProperty() {
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
-                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
-                    Previous
+                    पिछला
                   </button>
                 )}
               </div>
@@ -756,14 +1162,18 @@ export default function CreateNewProperty() {
                     onClick={handleNext}
                     className="px-5 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 font-medium transition-colors flex items-center shadow-sm"
                   >
-                    Next
+                    अगला
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 ml-2"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                 ) : (
@@ -780,25 +1190,36 @@ export default function CreateNewProperty() {
                           fill="none"
                           viewBox="0 0 24 24"
                         >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
                           <path
                             className="opacity-75"
                             fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Submitting...
+                        जमा हो रहा है...
                       </>
                     ) : (
                       <>
-                        Submit
+                        जमा करें
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-4 w-4 ml-2"
                           viewBox="0 0 20 20"
                           fill="currentColor"
                         >
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </>
                     )}
