@@ -4,8 +4,6 @@ import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { SchemesV1 } from "./pages/schemes/SchemesV1";
-import { SchemesV2 } from "./pages/schemes/SchemesV2";
-import { SchemesV3 } from "./pages/schemes/SchemesV3";
 import { Property } from "./pages/Property";
 import { PaymentDetails } from "./pages/PaymentDetails";
 import { Users } from "./pages/Users";
@@ -31,11 +29,9 @@ export default function App() {
               {/* <Route element={<PrivateRoute />}> */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/schemes-1" element={<SchemesV1 />} />
-                {/* <Route path="/schemes-2" element={<SchemesV2 />} /> */}
-                {/* <Route path="/schemes-3" element={<SchemesV3 />} /> */}
+
                 <Route path="/yojna/:yojnaId" element={<Property />} />
                 <Route path="/AddProperty" element={<CreateNewProperty />} />
-                {/* <Route path="/bida-mart" element={<NewProperty />} /> */}
                 <Route path="/users" element={<Users />} />
                 <Route path="/payment-details" element={<PaymentDetails />} />
                 <Route path="/settings" element={<Settings />} />

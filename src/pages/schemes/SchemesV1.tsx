@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "../../components/layout/DashboardLayout";
-import { Search, Grid, List, Filter, Building2, Users } from "lucide-react";
+import { Search, Grid, List, Filter, Building2, Users, Plus } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../data/endpoint";
+import { AddYojnaModal } from "../../components/schemes/AddYojnaModal.tsx";
+import { Toaster } from "react-hot-toast";
 
 export function SchemesV1() {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ export function SchemesV1() {
   const [schemes, setSchemes] = useState([]); // State to hold API data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [showAddModal, setShowAddModal] = useState(false);
   const { t } = useTranslation();
 
   // Fetch data from the API when the component mounts
@@ -79,6 +82,7 @@ export function SchemesV1() {
 
   return (
     <DashboardLayout>
+      <Toaster position="top-right" />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-6 md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -90,7 +94,14 @@ export function SchemesV1() {
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Add Yojna</span>
+            </button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
               <input
@@ -320,6 +331,35 @@ export function SchemesV1() {
           )}
         </div>
       </div>
+      
+      {showAddModal && (
+        <AddYojnaModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            // Refresh the schemes list
+            const fetchSchemes = async () => {
+              try {
+                const response = await fetch(BASE_URL+"/api/yojnas");
+                if (!response.ok) throw new Error("Failed to fetch schemes");
+                const result = await response.json();
+                const mappedSchemes = result.data.map((item) => ({
+                  id: item.yojna_id,
+                  name: item.yojna_name,
+                  nameHindi: item.yojna_name,
+                  type: "COMMERCIAL",
+                  totalPlots: item.property_count,
+                  occupiedPlots: 0,
+                  status: "ACTIVE",
+                }));
+                setSchemes(mappedSchemes);
+              } catch (err) {
+                console.error("Error refreshing schemes:", err);
+              }
+            };
+            fetchSchemes();
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 }

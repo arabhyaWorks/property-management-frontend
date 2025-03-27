@@ -16,3 +16,21 @@ body {
   background-color: rgb(var(--background));
   color: rgb(var(--text));
 }
+
+@keyframes success-check {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-success-check {
+  animation: success-check 0.5s ease-out forwards;
+}

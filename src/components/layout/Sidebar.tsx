@@ -10,16 +10,19 @@ import {
   Menu,
   X,
   LogOut,
-  PlayCircle
+  PlayCircle,
+  Calculator
 } from 'lucide-react';
 import { SidebarSchemeList } from './SidebarSchemeList';
 import { SidebarHeader } from './SidebarHeader';
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
+import { PaymentCounter } from '../payments/PaymentCounter.tsx';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showPaymentCounter, setShowPaymentCounter] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -116,6 +119,17 @@ export function Sidebar() {
           "absolute bottom-0 left-0 right-0 p-4 border-t border-blue-700 space-y-2",
           isCollapsed ? "text-center" : ""
         )}>
+          <button
+            onClick={() => setShowPaymentCounter(true)}
+            className={cn(
+              "flex items-center w-full p-3 rounded-lg text-white hover:bg-blue-700/50 transition-colors",
+              isCollapsed ? "justify-center" : "space-x-3"
+            )}
+          >
+            <Calculator className="h-5 w-5" />
+            {!isCollapsed && <span>Payment Counter</span>}
+          </button>
+
           <a
             href="https://play.google.com/store"
             target="_blank"
@@ -140,6 +154,11 @@ export function Sidebar() {
             {!isCollapsed && <span>{t('logout')}</span>}
           </button>
         </div>
+        
+        {/* Payment Counter Modal */}
+        {showPaymentCounter && (
+          <PaymentCounter onClose={() => setShowPaymentCounter(false)} />
+        )}
       </aside>
     </>
   );

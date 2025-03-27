@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { cn } from "../utils/cn"; // Utility for combining classNames (assumed)
-import { DashboardLayout } from "../components/layout/DashboardLayout"; // Layout component (assumed)
+import { cn } from "../utils/cn"; // Utility for combining classNames
+import { DashboardLayout } from "../components/layout/DashboardLayout";
 import BASE_URL from "../data/endpoint";
 
 //
 // ----------------------------- Form Structures -----------------------------
 //
 
-// Each "step" in our wizard: a title & a list of fields
 interface FormStep {
   title: string;
   fields: FormField[];
@@ -17,13 +16,14 @@ interface FormStep {
 interface FormField {
   id: string;
   label: string;
-  type: "text" | "number" | "date" | "select" | "textarea" | "boolean";
+  type: "text" | "number" | "date" | "select" | "textarea" | "boolean" | "file";
   options?: string[];
   required?: boolean;
   readOnly?: boolean;
+  accept?: string;
+  maxSize?: number;
 }
 
-// Base financial year options (will be narrowed down dynamically)
 const baseFinancialYearOptions = [
   "2020-2021",
   "2021-2022",
@@ -33,7 +33,7 @@ const baseFinancialYearOptions = [
   "2025-2026",
 ];
 
-// Multi-step form definition
+// The same 7 steps as before
 const formSteps: FormStep[] = [
   {
     title: "Basic Information",
@@ -42,7 +42,7 @@ const formSteps: FormStep[] = [
         id: "yojna_id",
         label: "योजना का नाम",
         type: "select",
-        options: [], // We'll fill from API
+        options: [],
         required: true,
       },
       {
@@ -81,14 +81,17 @@ const formSteps: FormStep[] = [
         type: "text",
       },
       {
-        id: "aadhar_photo_link",
-        label: "आधार फोटो लिंक",
-        type: "text",
+        id: "aadhar_photo",
+        label: "आधार फोटो (max size 200kb)",
+        type: "file",
+        accept: "image/*",
+        maxSize: 200 * 1024,
       },
       {
-        id: "documents_link",
-        label: "दस्तावेज़ लिंक",
-        type: "text",
+        id: "documents",
+        label: "दस्तावेज़ (PDF only)",
+        type: "file",
+        accept: "application/pdf",
       },
     ],
   },
@@ -147,7 +150,12 @@ const formSteps: FormStep[] = [
         type: "date",
         required: true,
       },
-      { id: "vikray_mulya", label: "विक्रय मूल्य", type: "number", required: true },
+      {
+        id: "vikray_mulya",
+        label: "विक्रय शुल्क",
+        type: "number",
+        required: true,
+      },
       { id: "auction_keemat", label: "नीलामी कीमत", type: "number" },
       { id: "lease_rent_dhanrashi", label: "लीज रेंट धनराशि", type: "number" },
       { id: "free_hold_dhanrashi", label: "फ्री होल्ड धनराशि", type: "number" },
@@ -225,8 +233,8 @@ const formSteps: FormStep[] = [
   {
     title: "Additional Charges & Details",
     fields: [
-      { id: "park_charge", label: "पार्क चार्ज", type: "number" },
-      { id: "corner_charge", label: "कॉर्नर चार्ज", type: "number" },
+      { id: "park_charge", label: "पार्क शुल्क", type: "number" },
+      { id: "corner_charge", label: "कॉर्नर शुल्क", type: "number" },
       {
         id: "atirikt_bhoomi_ki_dhanrashi",
         label: "अतिरिक्त भूमि की धनराशि",
@@ -244,26 +252,14 @@ const formSteps: FormStep[] = [
   {
     title: "Service Charge Details",
     fields: [
+      // We'll only show "financial year" + "payment date" in the form. 
+      // The rest are read-only or automatically computed.
       {
         id: "service_charge_financial_year",
         label: "वित्तीय वर्ष",
         type: "select",
-        options: [],
+        options: [], // we fill it dynamically
         required: true,
-      },
-      {
-        id: "service_charge_amount",
-        label: "सेवा शुल्क राशि",
-        type: "number",
-        required: true,
-        readOnly: true,
-      },
-      {
-        id: "service_charge_late_fee",
-        label: "सेवा शुल्क विलंब शुल्क",
-        type: "number",
-        required: true,
-        readOnly: true,
       },
       {
         id: "service_charge_payment_date",
@@ -271,6 +267,8 @@ const formSteps: FormStep[] = [
         type: "date",
         required: true,
       },
+      // We'll not show "service_charge_amount" or "service_charge_late_fee" as inputs
+      // They are computed once the user selects the year & date, then "Add Service Charge"
     ],
   },
 ];
@@ -279,7 +277,6 @@ const formSteps: FormStep[] = [
 // ----------------------------- Utility Functions -----------------------------
 //
 
-// Indian number system formatting (crore, lakh, thousand, etc.)
 const formatIndianNumber = (num: number): string => {
   if (isNaN(num)) return "₹0.00";
   const numStr = num.toFixed(2);
@@ -293,12 +290,10 @@ const formatIndianNumber = (num: number): string => {
   return `₹${formattedInteger}.${decimal}`;
 };
 
-// Calculate next due date, assuming quarterly increments
 const calculateNextDueDate = (startDate: string): string => {
   if (!startDate) return "";
   const date = new Date(startDate);
   const nextDate = new Date(date.setMonth(date.getMonth() + 3));
-  // If the date is beyond the last day of the month, adjust:
   const lastDayOfMonth = new Date(
     nextDate.getFullYear(),
     nextDate.getMonth() + 1,
@@ -310,7 +305,6 @@ const calculateNextDueDate = (startDate: string): string => {
   return nextDate.toISOString().split("T")[0];
 };
 
-// Calculate late fee for installments
 const calculateLateFee = (dueDate: string, paymentDate: string, lfpd: number): number => {
   const due = new Date(dueDate);
   const payment = new Date(paymentDate);
@@ -323,71 +317,68 @@ const calculateLateFee = (dueDate: string, paymentDate: string, lfpd: number): n
   return 0;
 };
 
-// Determine the financial year string for a given date
+// 1 Apr - 31 Mar approach
 const getFinancialYearFromDate = (dateString: string): string => {
   if (!dateString) return "";
   const date = new Date(dateString);
   const year = date.getFullYear();
-  const month = date.getMonth(); // 0-based
-  // If before April (month < 3), the FY starts the previous year
-  const financialYear = month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
-  console.log(financialYear)
-  return financialYear;
+  const month = date.getMonth();
+  return month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
 };
 
-// Generate a list of consecutive financial years up to 2025 based on allotment FY
 const generateFinancialYearOptions = (allotmentDate: string): string[] => {
   const allotmentFY = getFinancialYearFromDate(allotmentDate);
-  const [startYear] = allotmentFY.split("-").map(Number);
+  // skip the allotment year => start from allotmentFY+1
+  const [startY1, startY2] = allotmentFY.split("-").map(Number);
+  const nextStart = startY2; // the second year in "2015-2016" is 2016
 
   const options: string[] = [];
-  // You can adjust how far you go in the future
-  for (let year = startYear; year <= 2025; year++) {
+  for (let year = nextStart; year <= 2025; year++) {
     options.push(`${year}-${year + 1}`);
   }
-  console.log(options)
   return options;
 };
 
-// Calculate service charge late fee based on delay
-const calculateServiceChargeLateFee = (
-  allotmentFY: string,
+// Overdue logic: 1 year => 5%, 2 => 10%, 3+ => 15%
+function computeServiceChargeLateFee(
+  propertyFloorType: string,
   selectedFY: string,
-  paymentDate: string,
-  serviceChargeAmount: number
-): number => {
-  if (!allotmentFY || !selectedFY || !paymentDate) return 0;
+  allotmentFY: string,
+  paymentDate: string
+): { base: number; lateFee: number } {
+  if (!propertyFloorType || !selectedFY || !allotmentFY || !paymentDate) {
+    return { base: 0, lateFee: 0 };
+  }
 
-  // Payment is "due" by 31 March of the selected FY's end year
-  // e.g. if selectedFY is '2023-2024', due date is 2024-03-31
-  const [selectedStartYear] = selectedFY.split("-").map(Number);
-  const dueDate = new Date(`${selectedStartYear + 1}-03-31`);
+  // base
+  const baseCharge = propertyFloorType === "LGF" ? 10610 : 11005;
 
-  const payment = new Date(paymentDate);
+  // compute how many years late
+  const [fyStart, fyEnd] = selectedFY.split("-").map(Number); // e.g. 2021-2022 => [2021,2022]
+  // The year ends 31-Mar-fyEnd
+  const yearEnd = fyEnd; 
+  const payDateObj = new Date(paymentDate);
+  // We'll treat 31-Mar-yearEnd as the due date
+  const dueDate = new Date(`${yearEnd}-03-31`);
+  if (payDateObj <= dueDate) {
+    return { base: baseCharge, lateFee: 0 };
+  }
 
-  // If paid on or before due date, no late fee
-  if (payment <= dueDate) return 0;
+  // difference
+  const overdue = payDateObj.getFullYear() - yearEnd;
+  // if overdue >= 1 => 5%, >=2 => 10%, >=3 => 15%
+  let latePercent = 0;
+  if (overdue >= 3) latePercent = 0.15;
+  else if (overdue === 2) latePercent = 0.1;
+  else if (overdue === 1) latePercent = 0.05;
 
-  // For demonstration, we use this fixed "current date" from the system
-  // (You can replace with new Date() or your actual system date)
-  const currentDate = new Date("2025-03-23");
+  return {
+    base: baseCharge,
+    lateFee: baseCharge * latePercent,
+  };
+}
 
-  // How many years are we behind?
-  const yearsDelayed = currentDate.getFullYear() - (selectedStartYear + 1);
-
-  // Late fees:
-  //  - 5% for 1-year delay
-  //  - 10% for 2-year delay
-  //  - 15% for >=3 years
-  if (yearsDelayed <= 0) return 0;
-  if (yearsDelayed === 1) return serviceChargeAmount * 0.05;
-  if (yearsDelayed === 2) return serviceChargeAmount * 0.1;
-  if (yearsDelayed >= 3) return serviceChargeAmount * 0.15;
-
-  return 0;
-};
-
-// Format date as dd-mm-yyyy
+// format dd-mm-yyyy
 const formatDateToDDMMYYYY = (dateString: string): string | null => {
   if (!dateString) return null;
   const date = new Date(dateString);
@@ -397,29 +388,58 @@ const formatDateToDDMMYYYY = (dateString: string): string | null => {
   return `${day}-${month}-${year}`;
 };
 
+const validateAadhaarNumber = (value: string): boolean => {
+  const aadhaarRegex = /^\d{12}$/;
+  return aadhaarRegex.test(value);
+};
+
+const validateMobileNumber = (value: string): boolean => {
+  const mobileRegex = /^\d{10}$/;
+  return mobileRegex.test(value);
+};
+
 //
 // ----------------------------- Main Component -----------------------------
 //
 export default function CreateNewProperty() {
   const [currentStep, setCurrentStep] = useState<number>(0);
+
   const [formData, setFormData] = useState<any>({
     propertyRecord: {},
     installmentPlan: {},
     paymentInstallments: [],
     serviceCharges: [],
   });
+
+  // For Step 4 payment installments
+  const [currentPaymentEntry, setCurrentPaymentEntry] = useState<any>({
+    installment_amount: "",
+    interest_amount: "",
+    late_fee: "",
+    payment_date: "",
+  });
+
+  // For Step 6 service charges (we want multi entries as well)
+  const [currentServiceChargeEntry, setCurrentServiceChargeEntry] =
+    useState<any>({
+      service_charge_financial_year: "",
+      service_charge_payment_date: "",
+    });
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [yojnas, setYojnas] = useState<any[]>([]);
   const [financialYearOptions, setFinancialYearOptions] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const today = new Date().toISOString().split("T")[0];
 
   //
   // ----------------------------- Data Fetching -----------------------------
   //
-  // 1. Fetch all yojnas for the yojna_id dropdown
   useEffect(() => {
     const fetchYojnas = async () => {
       try {
-        const response = await fetch(BASE_URL+"/api/yojnas");
+        const response = await fetch(BASE_URL + "/api/yojnas");
         const data = await response.json();
         setYojnas(data.data);
       } catch (error) {
@@ -429,7 +449,7 @@ export default function CreateNewProperty() {
     fetchYojnas();
   }, []);
 
-  // 2. Fill installment plan fields from the selected yojna
+  // If user picks a Yojna, auto-fill interest rate, time period, etc.
   useEffect(() => {
     const selectedYojna = yojnas.find(
       (y) => y.yojna_id === formData.propertyRecord.yojna_id
@@ -450,7 +470,8 @@ export default function CreateNewProperty() {
   //
   // ----------------------------- Automatic Calculations -----------------------------
   //
-  // A. Automatically calculate Avshesh = auction_keemat - (panjikaran + avantan)
+
+  // Compute avshesh => installmentPlan.avshesh_dhanrashi
   useEffect(() => {
     const auctionKeemat = parseFloat(
       formData.propertyRecord.auction_keemat || "0"
@@ -478,25 +499,25 @@ export default function CreateNewProperty() {
     formData.propertyRecord.avantan_dhanrashi,
   ]);
 
-  // B. Calculate next due date (quarterly) after user sets the start date
+  // Recompute next_due_date if start_date_of_installment_year changes
   useEffect(() => {
     const startDate = formData.installmentPlan.start_date_of_installment_year;
     if (startDate) {
-      const nextDueDate = calculateNextDueDate(startDate);
+      const nd = calculateNextDueDate(startDate);
       setFormData((prev: any) => ({
         ...prev,
         installmentPlan: {
           ...prev.installmentPlan,
-          next_due_date: nextDueDate,
+          next_due_date: nd,
         },
       }));
     }
   }, [formData.installmentPlan.start_date_of_installment_year]);
 
-  // C. Payment Installment Late Fee (when user sets a payment date on Step 4)
+  // Step 4: PaymentInstallment "late fee" calculation
   useEffect(() => {
     if (currentStep === 4) {
-      const paymentDate = formData.paymentInstallments[0]?.payment_date;
+      const paymentDate = currentPaymentEntry.payment_date;
       const dueDate = formData.installmentPlan.next_due_date;
       const avsheshDhanrashi = parseFloat(
         formData.installmentPlan.avshesh_dhanrashi || "0"
@@ -507,149 +528,156 @@ export default function CreateNewProperty() {
         formData.installmentPlan.ideal_number_of_installments || "1"
       );
 
-      // TIA & Kul Yog calculations
       const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
       const adjustedInterest = totalInterestAmount / 2;
       const kulYog = avsheshDhanrashi + adjustedInterest;
       const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
-      // Late fee per day
       const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365;
 
       if (paymentDate && dueDate) {
-        const lateFee = calculateLateFee(dueDate, paymentDate, lateFeePerDay);
-        setFormData((prev: any) => ({
+        const lf = calculateLateFee(dueDate, paymentDate, lateFeePerDay);
+        setCurrentPaymentEntry((prev: any) => ({
           ...prev,
-          paymentInstallments: [
-            {
-              ...prev.paymentInstallments[0],
-              late_fee: lateFee,
-            },
-          ],
+          late_fee: lf.toFixed(2),
         }));
       }
     }
-  }, [
-    formData.paymentInstallments[0]?.payment_date,
-    formData.installmentPlan.next_due_date,
-    currentStep,
-  ]);
+  }, [currentPaymentEntry.payment_date, formData.installmentPlan.next_due_date, currentStep]);
 
-  // D. Dynamically generate list of FY for user to choose from (Step 6) based on allotment date
+  // Build financial year options from allotment date
   useEffect(() => {
     const allotmentDate = formData.propertyRecord.avantan_dinank;
     if (allotmentDate) {
+      // skip the allotment year -> start from next
       const options = generateFinancialYearOptions(allotmentDate);
       setFinancialYearOptions(options);
-
-      // If user hasn't selected any FY yet, default to earliest in the list
-      if (!formData.serviceCharges[0]?.service_charge_financial_year) {
-        setFormData((prev: any) => ({
-          ...prev,
-          serviceCharges: [
-            {
-              ...prev.serviceCharges[0],
-              service_charge_financial_year: options[0],
-            },
-          ],
-        }));
-      }
     }
   }, [formData.propertyRecord.avantan_dinank]);
 
-  // E. Service charge & late fee calculations whenever user is on step 6
-  useEffect(() => {
-    if (currentStep === 6) {
-      const floorType = formData.propertyRecord.property_floor_type;
-      // Base annual service charge
-      const serviceChargeAmount =
-        floorType === "LGF" ? 10610 : floorType === "UGF" ? 11005 : 0;
-
-      const allotmentFY = getFinancialYearFromDate(
-        formData.propertyRecord.avantan_dinank
-      );
-      const selectedFY =
-        formData.serviceCharges[0]?.service_charge_financial_year || allotmentFY;
-      const paymentDate = formData.serviceCharges[0]?.service_charge_payment_date;
-
-      // Late fee for the chosen FY
-      const lateFee = paymentDate
-        ? calculateServiceChargeLateFee(
-            allotmentFY,
-            selectedFY,
-            paymentDate,
-            serviceChargeAmount
-          )
-        : 0;
-
-      // We also track total
-      const totalServiceCharge = serviceChargeAmount + lateFee;
-
-      setFormData((prev: any) => ({
-        ...prev,
-        serviceCharges: [
-          {
-            ...prev.serviceCharges[0],
-            service_charge_amount: serviceChargeAmount,
-            service_charge_late_fee: lateFee,
-            // If you want to store the total as well
-            service_charge_total: totalServiceCharge,
-          },
-        ],
-      }));
-    }
-  }, [
-    currentStep,
-    formData.propertyRecord.property_floor_type,
-    formData.serviceCharges[0]?.service_charge_financial_year,
-    formData.serviceCharges[0]?.service_charge_payment_date,
-    formData.propertyRecord.avantan_dinank,
-  ]);
+  // We'll remove the old Step 6 logic that forced single service charge record
+  // Instead, we handle multi entries via "Add Service Charge" button
 
   //
-  // ----------------------------- Handlers -----------------------------
+  // ----------------------------- Payment & Service Charge Add Buttons -----------------------------
   //
-  // For updating form fields in state
-  const handleInputChange = (section: string, fieldId: string, value: any) => {
-    // For arrays like "paymentInstallments" or "serviceCharges", we store single object at index [0]
-    if (section === "paymentInstallments" || section === "serviceCharges") {
-      if (formData[section].length === 0) {
-        setFormData((prev: any) => ({
-          ...prev,
-          [section]: [{ [fieldId]: value === "" ? null : value }],
-        }));
-      } else {
-        setFormData((prev: any) => ({
-          ...prev,
-          [section]: [
-            {
-              ...prev[section][0],
-              [fieldId]: value === "" ? null : value,
-            },
-          ],
-        }));
-      }
-    } else {
-      setFormData((prev: any) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [fieldId]: value === "" ? null : value,
-        },
-      }));
+
+  // Step 4: "Add Payment"
+  const handleAddPayment = () => {
+    const { installment_amount, interest_amount, payment_date } = currentPaymentEntry;
+    if (!installment_amount || !interest_amount || !payment_date) {
+      alert("Please fill in all required fields before adding a payment.");
+      return;
     }
+    setFormData((prev: any) => ({
+      ...prev,
+      paymentInstallments: [...prev.paymentInstallments, { ...currentPaymentEntry }],
+    }));
+    // reset
+    setCurrentPaymentEntry({
+      installment_amount: "",
+      interest_amount: "",
+      late_fee: "",
+      payment_date: "",
+    });
   };
 
-  // Step navigation
-  const handleNext = () =>
-    setCurrentStep((prev) => Math.min(formSteps.length - 1, prev + 1));
-  const handlePrevious = () =>
-    setCurrentStep((prev) => Math.max(0, prev - 1));
+  // Step 6: "Add Service Charge"
+  const [currentServiceChargeComputed, setCurrentServiceChargeComputed] = useState<{
+    base: number;
+    lateFee: number;
+  }>({ base: 0, lateFee: 0 });
 
-  // Final Submit (step 6)
+  useEffect(() => {
+    if (currentStep === 6) {
+      const floorType = formData.propertyRecord.property_floor_type || "UGF";
+      const allotmentDate = formData.propertyRecord.avantan_dinank || "";
+      const allotmentFY = getFinancialYearFromDate(allotmentDate);
+
+      const selectedFY = currentServiceChargeEntry.service_charge_financial_year;
+      const payDate = currentServiceChargeEntry.service_charge_payment_date;
+
+      const { base, lateFee } = computeServiceChargeLateFee(
+        floorType,
+        selectedFY,
+        allotmentFY,
+        payDate
+      );
+      setCurrentServiceChargeComputed({ base, lateFee });
+    }
+  }, [currentStep, currentServiceChargeEntry, formData.propertyRecord.property_floor_type]);
+
+  // Add a row to formData.serviceCharges
+  const handleAddServiceCharge = () => {
+    const { service_charge_financial_year, service_charge_payment_date } = currentServiceChargeEntry;
+    if (!service_charge_financial_year || !service_charge_payment_date) {
+      alert("Please select financial year and payment date first.");
+      return;
+    }
+
+    // compute final
+    const base = currentServiceChargeComputed.base;
+    const lf = currentServiceChargeComputed.lateFee;
+    const total = base + lf;
+
+    const newEntry = {
+      service_charge_financial_year,
+      service_charge_amount: base.toFixed(2),
+      service_charge_late_fee: lf.toFixed(2),
+      service_charge_total: total.toFixed(2),
+      service_charge_payment_date,
+    };
+
+    setFormData((prev: any) => ({
+      ...prev,
+      serviceCharges: [...prev.serviceCharges, newEntry],
+    }));
+
+    // reset
+    setCurrentServiceChargeEntry({
+      service_charge_financial_year: "",
+      service_charge_payment_date: "",
+    });
+    setCurrentServiceChargeComputed({ base: 0, lateFee: 0 });
+  };
+
+  //
+  // ----------------------------- Next/Prev/Submit -----------------------------
+  //
+
+  const handleNext = () => {
+    // Basic validations on Step 0
+    if (currentStep === 0) {
+      const aadhaarValid = validateAadhaarNumber(formData.propertyRecord.aadhar_number || "");
+      const mobileValid = validateMobileNumber(formData.propertyRecord.mobile_no || "");
+
+      if (!aadhaarValid) {
+        setErrors((prev) => ({
+          ...prev,
+          aadhar_number: "Aadhaar number must be exactly 12 digits",
+        }));
+      }
+      if (!mobileValid) {
+        setErrors((prev) => ({
+          ...prev,
+          mobile_no: "Mobile number must be exactly 10 digits",
+        }));
+      }
+      if (!aadhaarValid || !mobileValid) {
+        return;
+      }
+    }
+
+    setCurrentStep((prev) => Math.min(formSteps.length - 1, prev + 1));
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep((prev) => Math.max(0, prev - 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Only actually submit on the final step
+    // only on step 6
     if (currentStep !== 6) return;
 
     const confirmSubmission = window.confirm(
@@ -659,138 +687,130 @@ export default function CreateNewProperty() {
 
     setIsSubmitting(true);
 
-    // Compute final fields for the payload
-    const avsheshDhanrashi = parseFloat(
-      formData.installmentPlan.avshesh_dhanrashi || "0"
-    );
-    const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
-    const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
-    const idealNumberOfInstallments = parseInt(
-      formData.installmentPlan.ideal_number_of_installments || "1"
-    );
+    try {
+      // Calculate final installmentPlan fields
+      const avsheshDhanrashi = parseFloat(
+        formData.installmentPlan.avshesh_dhanrashi || "0"
+      );
+      const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
+      const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
+      const idealNumberOfInstallments = parseInt(
+        formData.installmentPlan.ideal_number_of_installments || "1"
+      );
 
-    // TIA, TIA/2, Kul Yog, etc.
-    const totalInterestAmount =
-      (avsheshDhanrashi * interestRate * timePeriod) / 100;
-    const adjustedInterest = totalInterestAmount / 2;
-    const kulYog = avsheshDhanrashi + adjustedInterest;
-    const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
-    const idealKishtMool = avsheshDhanrashi / idealNumberOfInstallments;
-    const idealKishtByaj = adjustedInterest / idealNumberOfInstallments;
-    const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365;
+      const totalInterestAmount =
+        (avsheshDhanrashi * interestRate * timePeriod) / 100;
+      const adjustedInterest = totalInterestAmount / 2;
+      const kulYog = avsheshDhanrashi + adjustedInterest;
+      const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
+      const idealKishtMool = avsheshDhanrashi / idealNumberOfInstallments;
+      const idealKishtByaj = adjustedInterest / idealNumberOfInstallments;
+      const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365;
 
-    // Prepare final payload structure
-    const payload = {
-      propertyRecord: {
-        ...formData.propertyRecord,
-        // Convert 'true'/'false' => 'Yes'/'No'
-        bhavan_nirman:
-          formData.propertyRecord.bhavan_nirman === "true" ? "Yes" : "No",
-        // Format date fields to dd-mm-yyyy
-        panjikaran_dinank: formatDateToDDMMYYYY(
-          formData.propertyRecord.panjikaran_dinank
-        ),
-        avantan_dinank: formatDateToDDMMYYYY(
-          formData.propertyRecord.avantan_dinank
-        ),
-        kabja_dinank: formatDateToDDMMYYYY(
-          formData.propertyRecord.kabja_dinank
-        ),
-        nibandhan_dinank: formatDateToDDMMYYYY(
-          formData.propertyRecord.nibandhan_dinank
-        ),
-      },
-      installmentPlan: {
-        avshesh_dhanrashi: avsheshDhanrashi,
-        interest_rate: interestRate,
-        time_period: timePeriod,
-        total_interest_amount: totalInterestAmount,
-        total_interest_amount_div_2: adjustedInterest,
-        kul_yog: kulYog,
-        remaining_balance: kulYog, // Start with the full Kul Yog
-        ideal_number_of_installments: idealNumberOfInstallments,
-        ideal_installment_amount_per_installment: idealInstallmentAmount,
-        ideal_kisht_mool: idealKishtMool,
-        ideal_kisht_byaj: idealKishtByaj,
-        late_fee_per_day: lateFeePerDay,
-        start_date_of_installment_year: formatDateToDDMMYYYY(
-          formData.installmentPlan.start_date_of_installment_year
-        ),
-        next_due_date: formatDateToDDMMYYYY(
-          formData.installmentPlan.next_due_date
-        ),
-      },
-      paymentInstallments: formData.paymentInstallments.map((payment: any) => ({
-        ...payment,
-        payment_date: formatDateToDDMMYYYY(payment.payment_date),
-        payment_due_date: formatDateToDDMMYYYY(
-          formData.installmentPlan.next_due_date
-        ),
-        payment_amount:
-          parseFloat(payment.installment_amount || "0") +
-          parseFloat(payment.interest_amount || "0"),
-        kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
-        kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
-        total_payment_amount_with_late_fee:
-          parseFloat(payment.installment_amount || "0") +
-          parseFloat(payment.interest_amount || "0") +
-          parseFloat(payment.late_fee || "0"),
-        number_of_days_delayed:
-          payment.payment_date && formData.installmentPlan.next_due_date
-            ? Math.ceil(
-                (new Date(payment.payment_date).getTime() -
-                  new Date(formData.installmentPlan.next_due_date).getTime()) /
-                  (1000 * 3600 * 24)
-              )
-            : 0,
-        late_fee_amount: payment.late_fee || 0,
-      })),
-      serviceCharges: formData.serviceCharges.map((charge: any) => ({
-        service_charge_financial_year: charge.service_charge_financial_year,
-        service_charge_amount: charge.service_charge_amount,
-        service_charge_late_fee: charge.service_charge_late_fee,
-        // Also store the total if desired
-        service_charge_total:
-          (charge.service_charge_amount || 0) +
-          (charge.service_charge_late_fee || 0),
-        service_charge_payment_date: formatDateToDDMMYYYY(
-          charge.service_charge_payment_date
-        ),
-      })),
-    };
+      // Build final payload
+      const payload = {
+        propertyRecord: {
+          ...formData.propertyRecord,
+          bhavan_nirman:
+            formData.propertyRecord.bhavan_nirman === "true" ? "Yes" : "No",
+          panjikaran_dinank: formatDateToDDMMYYYY(formData.propertyRecord.panjikaran_dinank),
+          avantan_dinank: formatDateToDDMMYYYY(formData.propertyRecord.avantan_dinank),
+          kabja_dinank: formatDateToDDMMYYYY(formData.propertyRecord.kabja_dinank),
+          nibandhan_dinank: formatDateToDDMMYYYY(formData.propertyRecord.nibandhan_dinank),
+        },
+        installmentPlan: {
+          avshesh_dhanrashi: avsheshDhanrashi,
+          interest_rate: interestRate,
+          time_period: timePeriod,
+          total_interest_amount: totalInterestAmount,
+          total_interest_amount_div_2: adjustedInterest,
+          kul_yog: kulYog,
+          remaining_balance: kulYog,
+          ideal_number_of_installments: idealNumberOfInstallments,
+          ideal_installment_amount_per_installment: idealInstallmentAmount,
+          ideal_kisht_mool: idealKishtMool,
+          ideal_kisht_byaj: idealKishtByaj,
+          late_fee_per_day: lateFeePerDay,
+          start_date_of_installment_year: formatDateToDDMMYYYY(
+            formData.installmentPlan.start_date_of_installment_year
+          ),
+          next_due_date: formatDateToDDMMYYYY(
+            formData.installmentPlan.next_due_date
+          ),
+        },
+        paymentInstallments: formData.paymentInstallments.map((payment: any) => {
+          const finalPaymentDate = formatDateToDDMMYYYY(payment.payment_date);
+          const finalDueDate = formatDateToDDMMYYYY(
+            formData.installmentPlan.next_due_date
+          );
+          const pm = parseFloat(payment.installment_amount || "0");
+          const im = parseFloat(payment.interest_amount || "0");
+          const lf = parseFloat(payment.late_fee || "0");
+          const totalPay = pm + im;
+          const totalWithLate = totalPay + lf;
+          const daysDelayed =
+            payment.payment_date && formData.installmentPlan.next_due_date
+              ? Math.ceil(
+                  (new Date(payment.payment_date).getTime() -
+                    new Date(formData.installmentPlan.next_due_date).getTime()) /
+                    (1000 * 3600 * 24)
+                )
+              : 0;
 
-    // Log to check the payload
-    console.log(payload);
+          return {
+            ...payment,
+            payment_date: finalPaymentDate,
+            payment_due_date: finalDueDate,
+            payment_amount: totalPay,
+            kisht_mool_paid: pm,
+            kisht_byaj_paid: im,
+            total_payment_amount_with_late_fee: totalWithLate,
+            number_of_days_delayed: daysDelayed,
+            late_fee_amount: lf,
+          };
+        }),
+        serviceCharges: formData.serviceCharges.map((charge: any) => {
+          return {
+            service_charge_financial_year: charge.service_charge_financial_year,
+            service_charge_amount: parseFloat(charge.service_charge_amount || "0"),
+            service_charge_late_fee: parseFloat(charge.service_charge_late_fee || "0"),
+            service_charge_total:
+              parseFloat(charge.service_charge_amount || "0") +
+              parseFloat(charge.service_charge_late_fee || "0"),
+            service_charge_payment_date: formatDateToDDMMYYYY(
+              charge.service_charge_payment_date
+            ),
+          };
+        }),
+      };
 
-    // Submit to server
-    // try {
-    //   const response = await fetch(BASE_URL+"/api/properties", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization:
-    //         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiQURNSU4tMTc0MjU0MTQ0MzQwOCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjU0ODIyMiwiZXhwIjoxNzQyNTUxODIyfQ.p6D2houIQAP_Sp18TWAx9X3c2Aj6WkZnKAIgUy4l9u8",
-    //     },
-    //     body: JSON.stringify(payload),
-    //   });
+      // console.log("Final Payload:", payload);
+      console.log(payload)
 
-    //   if (response.ok) {
-    //     const result = await response.json();
-    //     console.log("Property added successfully:", result);
-    //   } else {
-    //     console.error("Failed to add property:", response.statusText);
-    //   }
-    // } catch (error) {
-    //   console.error("Error submitting form:", error);
-    // } finally {
-    //   setIsSubmitting(false);
-    // }
+      // TODO: Actually POST to /api/properties (uncomment for real usage)
+      // const token = localStorage.getItem("bida_token");
+      // const res = await fetch(BASE_URL + "/api/properties", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
+      // if (!res.ok) throw new Error("Property creation failed");
+      // const responseData = await res.json();
+      // console.log("Created property:", responseData);
+
+      alert("Property data logged in console. (Submit final in real usage)");
+    } catch (err) {
+      console.error(err);
+      alert("Error: " + (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  //
-  // ----------------------------- Step -> State Section Mapping -----------------------------
-  //
-  // We store data in different parts of formData; map the step index to the correct section
+  // Step -> State Section
   const sectionMap: { [key: number]: string } = {
     0: "propertyRecord",
     1: "propertyRecord",
@@ -801,9 +821,6 @@ export default function CreateNewProperty() {
     6: "serviceCharges",
   };
 
-  //
-  // ----------------------------- Rendering -----------------------------
-  //
   return (
     <DashboardLayout>
       <div className="bg-white dark:bg-gray-800 w-full">
@@ -840,31 +857,37 @@ export default function CreateNewProperty() {
             ))}
           </div>
 
-          {/* Actual form fields for the current step */}
+          {/* Form Container */}
           <form onSubmit={handleSubmit} className="mt-6">
-            {/* Scrollable container if needed */}
             <div className="max-h-[calc(100vh-320px)] overflow-y-auto px-2 custom-scrollbar">
-              {/* Section Header */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white pb-2 border-b border-gray-200 dark:border-gray-700">
                   {formSteps[currentStep].title}
                 </h3>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Fill in the details for{" "}
-                  {formSteps[currentStep].title.toLowerCase()}.
+                  Fill in the details for {formSteps[currentStep].title.toLowerCase()}.
                 </p>
               </div>
 
-              {/* Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {/* Render each field */}
                 {formSteps[currentStep].fields.map((field) => {
-                  // Value for read/write controls
                   let fieldValue: any = "";
-                  // If the section is an array (paymentInstallments or serviceCharges)
-                  if (sectionMap[currentStep] === "paymentInstallments" || sectionMap[currentStep] === "serviceCharges") {
-                    fieldValue =
-                      formData[sectionMap[currentStep]][0]?.[field.id] || "";
+                  if (sectionMap[currentStep] === "paymentInstallments") {
+                    // Step 4 => Payment
+                    fieldValue = currentPaymentEntry[field.id] || "";
+                  } else if (sectionMap[currentStep] === "serviceCharges") {
+                    // Step 6 => We'll only show "financial_year" + "payment_date" for the current new entry
+                    if (field.id === "service_charge_financial_year") {
+                      fieldValue = currentServiceChargeEntry[field.id] || "";
+                    } else if (field.id === "service_charge_payment_date") {
+                      fieldValue = currentServiceChargeEntry[field.id] || "";
+                    } else {
+                      // readOnly fields won't be displayed here
+                      fieldValue = "";
+                    }
                   } else {
+                    // Normal approach
                     fieldValue = formData[sectionMap[currentStep]][field.id] || "";
                   }
 
@@ -878,7 +901,8 @@ export default function CreateNewProperty() {
                           </span>
                         )}
                       </label>
-                      {/* Read-only? */}
+
+                      {/* Handling readOnly, select, etc. */}
                       {field.readOnly ? (
                         <input
                           type={field.type}
@@ -888,56 +912,44 @@ export default function CreateNewProperty() {
                         />
                       ) : field.type === "select" ? (
                         <select
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
-                          }
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-400"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (sectionMap[currentStep] === "serviceCharges") {
+                              // Step 6
+                              setCurrentServiceChargeEntry((prev: any) => ({
+                                ...prev,
+                                [field.id]: val,
+                              }));
+                            } else {
+                              // normal approach
+                              handleInputChange(sectionMap[currentStep], field.id, val);
+                            }
+                          }}
                           value={fieldValue}
                         >
-                          <option value="" className="dark:bg-gray-800">
-                            Select option...
-                          </option>
+                          <option value="">Select option...</option>
                           {field.id === "yojna_id"
-                            ? // Yojna list from API
-                              yojnas.map((yojna) => (
-                                <option
-                                  key={yojna.yojna_id}
-                                  value={yojna.yojna_id}
-                                  className="dark:bg-gray-800"
-                                >
+                            ? yojnas.map((yojna) => (
+                                <option key={yojna.yojna_id} value={yojna.yojna_id}>
                                   {yojna.yojna_name}
                                 </option>
                               ))
                             : field.id === "service_charge_financial_year"
-                            ? // Generated financial years
-                              financialYearOptions.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                  className="dark:bg-gray-800"
-                                >
-                                  {option}
+                            ? financialYearOptions.map((fy) => (
+                                <option key={fy} value={fy}>
+                                  {fy}
                                 </option>
                               ))
-                            : // Static select options
-                              field.options?.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                  className="dark:bg-gray-800"
-                                >
-                                  {option}
+                            : field.options?.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
                                 </option>
                               ))}
                         </select>
                       ) : field.type === "textarea" ? (
                         <textarea
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm min-h-24"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300"
                           value={fieldValue}
                           onChange={(e) =>
                             handleInputChange(
@@ -949,50 +961,162 @@ export default function CreateNewProperty() {
                         />
                       ) : field.type === "boolean" ? (
                         <select
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300"
                           onChange={(e) =>
-                            handleInputChange(
-                              sectionMap[currentStep],
-                              field.id,
-                              e.target.value
-                            )
+                            handleInputChange(sectionMap[currentStep], field.id, e.target.value)
                           }
                           value={fieldValue}
                         >
-                          <option value="" className="dark:bg-gray-800">
-                            Select...
-                          </option>
-                          <option value="true" className="dark:bg-gray-800">
-                            Yes
-                          </option>
-                          <option value="false" className="dark:bg-gray-800">
-                            No
-                          </option>
+                          <option value="">Select...</option>
+                          <option value="true">Yes</option>
+                          <option value="false">No</option>
                         </select>
-                      ) : (
+                      ) : field.type === "file" ? (
                         <input
-                          type={field.type}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          value={fieldValue}
+                          type="file"
+                          accept={field.accept}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300"
                           onChange={(e) =>
                             handleInputChange(
                               sectionMap[currentStep],
                               field.id,
-                              e.target.value
+                              e.target.files ? e.target.files[0] : null
                             )
                           }
                         />
+                      ) : field.type === "date" ? (
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300"
+                          value={fieldValue}
+                          max={today}
+                          onChange={(e) =>
+                            sectionMap[currentStep] === "serviceCharges"
+                              ? setCurrentServiceChargeEntry((prev: any) => ({
+                                  ...prev,
+                                  [field.id]: e.target.value,
+                                }))
+                              : handleInputChange(
+                                  sectionMap[currentStep],
+                                  field.id,
+                                  e.target.value
+                                )
+                          }
+                        />
+                      ) : (
+                        // normal text/number input
+                        <input
+                          type={field.type}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300"
+                          value={fieldValue}
+                          onChange={(e) =>
+                            sectionMap[currentStep] === "serviceCharges"
+                              ? setCurrentServiceChargeEntry((prev: any) => ({
+                                  ...prev,
+                                  [field.id]: e.target.value,
+                                }))
+                              : handleInputChange(
+                                  sectionMap[currentStep],
+                                  field.id,
+                                  e.target.value
+                                )
+                          }
+                        />
+                      )}
+
+                      {/* Error */}
+                      {errors[field.id] && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors[field.id]}
+                        </p>
                       )}
                     </div>
                   );
                 })}
               </div>
 
+              {/* Payment Table & Button for Step 4 */}
+              {currentStep === 4 && (
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={handleAddPayment}
+                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-green-700 font-medium shadow-sm"
+                  >
+                    Add Payment
+                  </button>
+
+                  {/* Payment Table */}
+                  {formData.paymentInstallments.length > 0 && (
+                    <div className="mt-6 overflow-x-auto">
+                      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              Installment Amount
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              Interest Amount
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              Late Fee
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              Payment Date
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              Total Payment Amount
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.paymentInstallments.map(
+                            (payment: any, index: number) => {
+                              const totalPaymentAmount =
+                                parseFloat(payment.installment_amount || "0") +
+                                parseFloat(payment.interest_amount || "0") +
+                                parseFloat(payment.late_fee || "0");
+                              return (
+                                <tr
+                                  key={index}
+                                  className="border-t border-gray-200"
+                                >
+                                  <td className="px-4 py-2 text-sm">
+                                    {formatIndianNumber(
+                                      parseFloat(payment.installment_amount || "0")
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm">
+                                    {formatIndianNumber(
+                                      parseFloat(payment.interest_amount || "0")
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm">
+                                    {formatIndianNumber(
+                                      parseFloat(payment.late_fee || "0")
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm">
+                                    {formatDateToDDMMYYYY(payment.payment_date) || payment.payment_date}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm">
+                                    {formatIndianNumber(totalPaymentAmount)}
+                                  </td>
+                                </tr>
+                              );
+                            }
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Installment Plan Summary (Step 3) */}
               {currentStep === 3 && (
-                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg shadow-sm">
+                  <h4 className="text-lg font-medium mb-4">
                     Installment Plan Summary
                   </h4>
                   {(() => {
@@ -1006,8 +1130,7 @@ export default function CreateNewProperty() {
                       formData.installmentPlan.time_period || "0"
                     );
                     const idealNumberOfInstallments = parseInt(
-                      formData.installmentPlan.ideal_number_of_installments ||
-                        "1"
+                      formData.installmentPlan.ideal_number_of_installments || "1"
                     );
 
                     const totalInterestAmount =
@@ -1026,66 +1149,50 @@ export default function CreateNewProperty() {
                     return (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Avshesh Dhanrashi
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">अवशेष धनराशि</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(avsheshDhanrashi)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Total Interest Amount
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">कुल ब्याज राशि (एक वर्ष)</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(totalInterestAmount)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Adjusted Interest (TIA / 2)
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">ब्याज राशि (छह महीने)</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(adjustedInterest)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Kul Yog
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">कुल योग</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(kulYog)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Ideal Installment (Per Installment)
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">तिमहि किस्त धनराशी</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(idealInstallmentAmount)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Principal per Installment (Kisht Mool)
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">किस्त मूल धनराशी</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(idealKishtMool)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Interest per Installment (Kisht Byaj)
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">किस्त ब्याज धनराशी</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(idealKishtByaj)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Late Fee per Day
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-600">प्रति दिन विलंब धनराशी</p>
+                          <p className="text-lg font-semibold">
                             {formatIndianNumber(lateFeePerDay)}
                           </p>
                         </div>
@@ -1094,16 +1201,123 @@ export default function CreateNewProperty() {
                   })()}
                 </div>
               )}
+
+              {/* Step 6: Service Charge multi-entry */}
+              {currentStep === 6 && (
+                <div className="mt-6">
+                  <h4 className="text-lg font-medium mb-4">Service Charges</h4>
+                  {/* Fields: financial year + payment date => we compute base + late fee */}
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">
+                        वित्तीय वर्ष
+                      </label>
+                      <select
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300"
+                        value={currentServiceChargeEntry.service_charge_financial_year}
+                        onChange={(e) =>
+                          setCurrentServiceChargeEntry((prev: any) => ({
+                            ...prev,
+                            service_charge_financial_year: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Select FY</option>
+                        {financialYearOptions.map((fy) => (
+                          <option key={fy} value={fy}>
+                            {fy}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">
+                        सेवा शुल्क भुगतान तिथि
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300"
+                        value={currentServiceChargeEntry.service_charge_payment_date}
+                        onChange={(e) =>
+                          setCurrentServiceChargeEntry((prev: any) => ({
+                            ...prev,
+                            service_charge_payment_date: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={handleAddServiceCharge}
+                      className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                    >
+                      Add Service Charge
+                    </button>
+                  </div>
+
+                  {/* Table of serviceCharges */}
+                  {formData.serviceCharges.length > 0 && (
+                    <div className="mt-6 overflow-x-auto">
+                      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              वित्तीय वर्ष
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              सेवा शुल्क राशि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              विलंब शुल्क
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              कुल राशि
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">
+                              भुगतान तिथि
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.serviceCharges.map((sc: any, idx: number) => (
+                            <tr key={idx} className="border-t">
+                              <td className="px-4 py-2 text-sm">
+                                {sc.service_charge_financial_year}
+                              </td>
+                              <td className="px-4 py-2 text-sm">
+                                {formatIndianNumber(parseFloat(sc.service_charge_amount || "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-sm">
+                                {formatIndianNumber(parseFloat(sc.service_charge_late_fee || "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-sm">
+                                {formatIndianNumber(parseFloat(sc.service_charge_total || "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-sm">
+                                {formatDateToDDMMYYYY(sc.service_charge_payment_date) ||
+                                  sc.service_charge_payment_date}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Step Navigation */}
-            <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            {/* Navigation Buttons */}
+            <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between items-center">
               <div>
                 {currentStep > 0 && (
                   <button
                     type="button"
                     onClick={handlePrevious}
-                    className="px-5 py-2.5 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors flex items-center"
+                    className="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium flex items-center"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1126,7 +1340,7 @@ export default function CreateNewProperty() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="px-5 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 font-medium transition-colors flex items-center shadow-sm"
+                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center shadow-sm"
                   >
                     Next
                     <svg
@@ -1137,7 +1351,7 @@ export default function CreateNewProperty() {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4-4a1 1 0 011.414 0z"
                         clipRule="evenodd"
                       />
                     </svg>
@@ -1146,7 +1360,7 @@ export default function CreateNewProperty() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-5 py-2.5 bg-green-600 dark:bg-green-600 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center shadow-sm"
+                    className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center shadow-sm"
                   >
                     {isSubmitting ? (
                       <>
