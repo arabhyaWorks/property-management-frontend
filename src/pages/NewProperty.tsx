@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import BASE_URL from "../data/endpoint";
-// import ServiceChargeStep from "./ServiceChargeStep"; // Import the new component
 import ServiceChargeStep from "../components/propertyCreation/serviceChargeStep";
 
 // Form Structures
@@ -77,8 +76,6 @@ const formSteps: FormStep[] = [
       { id: "interest_rate", label: "ब्याज दर (%)", type: "number", required: true, readOnly: true },
       { id: "time_period", label: "समय अवधि (वर्ष)", type: "number", required: true, readOnly: true },
       { id: "ideal_number_of_installments", label: "किश्तों की संख्या", type: "number", required: true, readOnly: true },
-      { id: "start_date_of_installment_year", label: "किश्त शुरू होने की तारीख", type: "date", required: true },
-      { id: "next_due_date", label: "अगली किश्त की तारीख", type: "date", required: true, readOnly: true },
     ],
   },
   {
@@ -130,13 +127,14 @@ const formatIndianNumber = (num: number): string => {
   return `₹${formattedInteger}.${decimal}`;
 };
 
-const calculateNextDueDate = (startDate: string): string => {
-  if (!startDate) return "";
-  const date = new Date(startDate);
-  const nextDate = new Date(date.setMonth(date.getMonth() + 3));
-  const lastDayOfMonth = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate();
-  if (date.getDate() > lastDayOfMonth) nextDate.setDate(lastDayOfMonth);
-  return nextDate.toISOString().split("T")[0];
+const addMonths = (dateString: string, months: number): string => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const newDate = new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
+  if (date.getDate() !== newDate.getDate()) {
+    newDate.setDate(0); // Set to last day of previous month
+  }
+  return newDate.toISOString().split("T")[0];
 };
 
 const calculateLateFee = (dueDate: string, paymentDate: string, lfpd: number): number => {
@@ -218,6 +216,21 @@ export default function CreateNewProperty() {
     }
   }, [formData.propertyRecord.yojna_id, yojnas]);
 
+  // Calculate first_installment_due_date based on avantan_dinank
+  useEffect(() => {
+    const avantanDinank = formData.propertyRecord.avantan_dinank;
+    if (avantanDinank) {
+      const firstDueDate = addMonths(avantanDinank, 1);
+      setFormData((prev: any) => ({
+        ...prev,
+        installmentPlan: {
+          ...prev.installmentPlan,
+          first_installment_due_date: firstDueDate,
+        },
+      }));
+    }
+  }, [formData.propertyRecord.avantan_dinank]);
+
   // Automatic Calculations
   useEffect(() => {
     const auctionKeemat = parseFloat(formData.propertyRecord.auction_keemat || "0");
@@ -238,24 +251,33 @@ export default function CreateNewProperty() {
     formData.propertyRecord.avantan_dhanrashi,
   ]);
 
+  // Prepopulate installment_amount and interest_amount
   useEffect(() => {
-    const startDate = formData.installmentPlan.start_date_of_installment_year;
-    if (startDate) {
-      const nextDueDate = calculateNextDueDate(startDate);
-      setFormData((prev: any) => ({
+    if (currentStep === 4 && !currentPaymentEntry.installment_amount) {
+      const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
+      const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
+      const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
+      const idealNumberOfInstallments = parseInt(formData.installmentPlan.ideal_number_of_installments || "1");
+
+      const totalInterestAmount = (avsheshDhanrashi * interestRate * timePeriod) / 100;
+      const adjustedInterest = totalInterestAmount / 2;
+      const idealKishtMool = avsheshDhanrashi / idealNumberOfInstallments;
+      const idealKishtByaj = adjustedInterest / idealNumberOfInstallments;
+
+      setCurrentPaymentEntry((prev: any) => ({
         ...prev,
-        installmentPlan: {
-          ...prev.installmentPlan,
-          next_due_date: nextDueDate,
-        },
+        installment_amount: idealKishtMool.toFixed(2),
+        interest_amount: idealKishtByaj.toFixed(2),
       }));
     }
-  }, [formData.installmentPlan.start_date_of_installment_year]);
+  }, [currentStep, formData.installmentPlan, currentPaymentEntry.installment_amount]);
 
+  // Calculate late_fee for current payment entry
   useEffect(() => {
-    if (currentStep === 4) {
+    if (currentStep === 4 && formData.installmentPlan.first_installment_due_date) {
+      const installmentNumber = formData.paymentInstallments.length + 1;
+      const dueDate = addMonths(formData.installmentPlan.first_installment_due_date, (installmentNumber - 1) * 3);
       const paymentDate = currentPaymentEntry.payment_date;
-      const dueDate = formData.installmentPlan.next_due_date;
       const avsheshDhanrashi = parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0");
       const interestRate = parseFloat(formData.installmentPlan.interest_rate || "0");
       const timePeriod = parseFloat(formData.installmentPlan.time_period || "0");
@@ -275,7 +297,7 @@ export default function CreateNewProperty() {
         }));
       }
     }
-  }, [currentPaymentEntry.payment_date, formData.installmentPlan.next_due_date, currentStep]);
+  }, [currentPaymentEntry.payment_date, formData.installmentPlan.first_installment_due_date, formData.paymentInstallments.length, currentStep]);
 
   // Handlers
   const handleInputChange = (section: string, fieldId: string, value: any) => {
@@ -293,36 +315,6 @@ export default function CreateNewProperty() {
         },
       }));
     }
-
-    // if (fieldId === "aadhar_number") {
-    //   if (!validateAadhaarNumber(value)) {
-    //     setErrors((prev) => ({
-    //       ...prev,
-    //       aadhar_number: "Aadhaar number must be exactly 12 digits",
-    //     }));
-    //   } else {
-    //     setErrors((prev) => {
-    //       const newErrors = { ...prev };
-    //       delete newErrors.aadhar_number;
-    //       return newErrors;
-    //     });
-    //   }
-    // }
-
-    // if (fieldId === "mobile_no") {
-    //   if (!validateMobileNumber(value)) {
-    //     setErrors((prev) => ({
-    //       ...prev,
-    //       mobile_no: "Mobile number must be exactly 10 digits",
-    //     }));
-    //   } else {
-    //     setErrors((prev) => {
-    //       const newErrors = { ...prev };
-    //       delete newErrors.mobile_no;
-    //       return newErrors;
-    //     });
-    //   }
-    // }
 
     if (fieldId === "aadhar_photo" && value) {
       const file = value as File;
@@ -356,9 +348,19 @@ export default function CreateNewProperty() {
       return;
     }
 
+    const installmentNumber = formData.paymentInstallments.length + 1;
+    const dueDate = addMonths(formData.installmentPlan.first_installment_due_date, (installmentNumber - 1) * 3);
+
     setFormData((prev: any) => ({
       ...prev,
-      paymentInstallments: [...prev.paymentInstallments, { ...currentPaymentEntry }],
+      paymentInstallments: [
+        ...prev.paymentInstallments,
+        {
+          ...currentPaymentEntry,
+          payment_number: installmentNumber,
+          due_date: dueDate,
+        },
+      ],
     }));
 
     setCurrentPaymentEntry({
@@ -370,16 +372,6 @@ export default function CreateNewProperty() {
   };
 
   const handleNext = () => {
-    if (currentStep === 0) {
-      // const aadhaarValid = validateAadhaarNumber(formData.propertyRecord.aadhar_number || "");
-      // const mobileValid = validateMobileNumber(formData.propertyRecord.mobile_no || "");
-
-      // if (!aadhaarValid) setErrors((prev) => ({ ...prev, aadhar_number: "Aadhaar number must be exactly 12 digits" }));
-      // if (!mobileValid) setErrors((prev) => ({ ...prev, mobile_no: "Mobile number must be exactly 10 digits" }));
-
-      // if (!aadhaarValid || !mobileValid) return;
-    }
-
     setCurrentStep((prev) => Math.min(formSteps.length - 1, prev + 1));
   };
 
@@ -430,29 +422,20 @@ export default function CreateNewProperty() {
         ideal_kisht_mool: idealKishtMool,
         ideal_kisht_byaj: idealKishtByaj,
         late_fee_per_day: lateFeePerDay,
-        start_date_of_installment_year: formatDateToDDMMYYYY(formData.installmentPlan.start_date_of_installment_year),
-        next_due_date: formatDateToDDMMYYYY(formData.installmentPlan.next_due_date),
+        first_installment_due_date: formatDateToDDMMYYYY(formData.installmentPlan.first_installment_due_date),
       },
       paymentInstallments: formData.paymentInstallments.map((payment: any) => ({
-        ...payment,
-        payment_date: formatDateToDDMMYYYY(payment.payment_date),
-        payment_due_date: formatDateToDDMMYYYY(formData.installmentPlan.next_due_date),
+        payment_number: payment.payment_number,
         payment_amount: parseFloat(payment.installment_amount || "0") + parseFloat(payment.interest_amount || "0"),
         kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
         kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
-        total_payment_amount_with_late_fee:
-          parseFloat(payment.installment_amount || "0") +
-          parseFloat(payment.interest_amount || "0") +
-          parseFloat(payment.late_fee || "0"),
-        number_of_days_delayed:
-          payment.payment_date && formData.installmentPlan.next_due_date
-            ? Math.ceil(
-                (new Date(payment.payment_date).getTime() -
-                  new Date(formData.installmentPlan.next_due_date).getTime()) /
-                  (1000 * 3600 * 24)
-              )
-            : 0,
+        payment_due_date: formatDateToDDMMYYYY(payment.due_date),
+        payment_date: formatDateToDDMMYYYY(payment.payment_date),
+        number_of_days_delayed: payment.payment_date && payment.due_date
+          ? Math.max(0, Math.ceil((new Date(payment.payment_date).getTime() - new Date(payment.due_date).getTime()) / (1000 * 3600 * 24)))
+          : 0,
         late_fee_amount: parseFloat(payment.late_fee || "0"),
+        total_payment_amount_with_late_fee: parseFloat(payment.installment_amount || "0") + parseFloat(payment.interest_amount || "0") + parseFloat(payment.late_fee || "0"),
       })),
       serviceCharges: formData.serviceCharges.map((charge: any) => ({
         service_charge_financial_year: charge.service_charge_financial_year,
@@ -623,6 +606,13 @@ export default function CreateNewProperty() {
                 </div>
               )}
 
+              {currentStep === 4 && formData.installmentPlan.first_installment_due_date && (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Installment Number: {formData.paymentInstallments.length + 1}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Due Date: {formatDateToDDMMYYYY(addMonths(formData.installmentPlan.first_installment_due_date, formData.paymentInstallments.length * 3))}</p>
+                </div>
+              )}
+
               {currentStep === 4 && (
                 <div className="mt-6">
                   <button
@@ -638,6 +628,8 @@ export default function CreateNewProperty() {
                       <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-gray-700">
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Installment Number</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Due Date</th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Installment Amount</th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Interest Amount</th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">Late Fee</th>
@@ -653,21 +645,13 @@ export default function CreateNewProperty() {
                               parseFloat(payment.late_fee || "0");
                             return (
                               <tr key={index} className="border-t border-gray-200 dark:border-gray-700">
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                  {formatIndianNumber(parseFloat(payment.installment_amount || "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                  {formatIndianNumber(parseFloat(payment.interest_amount || "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                  {formatIndianNumber(parseFloat(payment.late_fee || "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                  {formatDateToDDMMYYYY(payment.payment_date) || payment.payment_date}
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                  {formatIndianNumber(totalPaymentAmount)}
-                                </td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{payment.payment_number}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatDateToDDMMYYYY(payment.due_date)}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.installment_amount || "0"))}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.interest_amount || "0"))}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(parseFloat(payment.late_fee || "0"))}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatDateToDDMMYYYY(payment.payment_date)}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{formatIndianNumber(totalPaymentAmount)}</td>
                               </tr>
                             );
                           })}
@@ -730,6 +714,10 @@ export default function CreateNewProperty() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">प्रति दिन विलंब धनराशी</p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatIndianNumber(lateFeePerDay)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">First Installment Due Date</p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDateToDDMMYYYY(formData.installmentPlan.first_installment_due_date)}</p>
                         </div>
                       </div>
                     );
