@@ -1,0 +1,39 @@
+{
+    "propertyRecord": {
+        "yojna_id": "BIDA-MART",
+        "avanti_sampatti_sankhya": "121",
+        "property_floor_type": "UGF",
+        "sampatti_sreni": "आवासीय",
+        "avantan_dinank": "01-01-2016",
+        "bhavan_nirman": "No",
+        "panjikaran_dinank": null,
+        "kabja_dinank": null,
+        "nibandhan_dinank": null
+    },
+    "installmentPlan": {
+        "avshesh_dhanrashi": 0,
+        "interest_rate": 12,
+        "time_period": 1,
+        "total_interest_amount": 0,
+        "total_interest_amount_div_2": 0,
+        "kul_yog": 0,
+        "remaining_balance": 0,
+        "ideal_number_of_installments": 4,
+        "ideal_installment_amount_per_installment": 0,
+        "ideal_kisht_mool": 0,
+        "ideal_kisht_byaj": 0,
+        "late_fee_per_day": 0,
+        "start_date_of_installment_year": null,
+        "next_due_date": null
+    },
+    "paymentInstallments": [],
+    "serviceCharges": [
+        {
+            "service_charge_financial_year": "2016-2017",
+            "service_charge_amount": 11005,
+            "service_charge_late_fee": 1650.75,
+            "service_charge_total": 12655.75,
+            "service_charge_payment_date": "01-04-2020"
+        }
+    ]
+}

@@ -1,255 +1,170 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 interface ServiceChargeStepProps {
   formData: any;
   setFormData: (data: any) => void;
-  errors: { [key: string]: string };
-  setErrors: (errors: { [key: string]: string }) => void;
 }
 
-// Form step structure (copied from main file, only step 6 is needed)
-interface FormField {
-  id: string;
-  label: string;
-  type: "text" | "number" | "date" | "select" | "textarea" | "boolean" | "file";
-  options?: string[];
-  required?: boolean;
-  readOnly?: boolean;
-}
+// Utility Functions (Calculation Logic Unchanged)
+const getFinancialYearFromDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0 = Jan, 3 = Apr
+  return month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
+};
 
-const serviceChargeFields: FormField[] = [
-  {
-    id: "service_charge_financial_year",
-    label: "वित्तीय वर्ष",
-    type: "select",
-    options: [],
-    required: true,
-  },
-  {
-    id: "service_charge_amount",
-    label: "सेवा शुल्क राशि",
-    type: "number",
-    required: true,
-    readOnly: true,
-  },
-  {
-    id: "service_charge_late_fee",
-    label: "सेवा शुल्क विलंब शुल्क",
-    type: "number",
-    required: true,
-    readOnly: true,
-  },
-  {
-    id: "service_charge_payment_date",
-    label: "सेवा शुल्क भुगतान तिथि",
-    type: "date",
-    required: true,
-  },
-];
+const generateBilledYears = (allotmentDate: string, currentDate: string): string[] => {
+  const allotmentFY = getFinancialYearFromDate(allotmentDate);
+  const [startYear] = allotmentFY.split("-").map(Number);
+  const currentFY = getFinancialYearFromDate(currentDate);
+  const [endYear] = currentFY.split("-").map(Number);
+  const years = [];
+  for (let year = startYear + 1; year <= endYear; year++) {
+    years.push(`${year}-${year + 1}`);
+  }
+  return years;
+};
 
-function ServiceChargeStep({
-  formData,
-  setFormData,
-  errors,
-  setErrors,
-}: ServiceChargeStepProps) {
-  const [financialYearOptions, setFinancialYearOptions] = useState<string[]>([]);
+const getEndYear = (fy: string): number => {
+  const [, end] = fy.split("-");
+  return Number(end);
+};
 
-  // Utility functions
-  const getFinancialYearFromDate = (dateString: string): string => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const financialYear =
-      month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
-    return financialYear;
-  };
+const calculateLateFee = (serviceChargeFY: string, paymentDate: string, baseAmount: number): number => {
+  if (!paymentDate) return 0;
+  const serviceChargeEndYear = getEndYear(serviceChargeFY);
+  const paymentFY = getFinancialYearFromDate(paymentDate);
+  const paymentEndYear = getEndYear(paymentFY);
+  const diff = paymentEndYear - serviceChargeEndYear;
+  if (diff <= 0) return 0;
+  const percentage = diff === 1 ? 0.05 : diff === 2 ? 0.1 : diff >= 3 ? 0.15 : 0;
+  return baseAmount * percentage;
+};
 
-  const generateFinancialYearOptions = (allotmentDate: string): string[] => {
-    const allotmentFY = getFinancialYearFromDate(allotmentDate);
-    const [startYear] = allotmentFY.split("-").map(Number);
 
-    const options: string[] = [];
-    for (let year = startYear; year <= 2025; year++) {
-      options.push(`${year}-${year + 1}`);
-    }
-    return options;
-  };
 
-  const calculateServiceChargeLateFee = (
-    allotmentFY: string,
-    selectedFY: string,
-    paymentDate: string,
-    serviceChargeAmount: number
-  ): number => {
-    if (!allotmentFY || !selectedFY || !paymentDate) return 0;
-
-    const [selectedStartYear] = selectedFY.split("-").map(Number);
-    const dueDate = new Date(`${selectedStartYear + 1}-03-31`);
-    const payment = new Date(paymentDate);
-
-    if (payment <= dueDate) return 0;
-
-    const currentDate = new Date("2025-03-23");
-    const yearsDelayed = currentDate.getFullYear() - (selectedStartYear + 1);
-
-    if (yearsDelayed <= 0) return 0;
-    if (yearsDelayed === 1) return serviceChargeAmount * 0.05;
-    if (yearsDelayed === 2) return serviceChargeAmount * 0.1;
-    if (yearsDelayed >= 3) return serviceChargeAmount * 0.15;
-
-    return 0;
-  };
-
-  // Generate financial year options
-  useEffect(() => {
-    const allotmentDate = formData.propertyRecord.avantan_dinank;
-    if (allotmentDate) {
-      const options = generateFinancialYearOptions(allotmentDate);
-      setFinancialYearOptions(options);
-
-      if (!formData.serviceCharges[0]?.service_charge_financial_year) {
-        setFormData((prevFormData: any) => ({
-          ...prevFormData,
-          serviceCharges: [
-            {
-              ...(prevFormData.serviceCharges[0] || {}),
-              service_charge_financial_year: options[0],
-            },
-          ],
-        }));
-      }
-    }
-  }, [
-    formData.propertyRecord.avantan_dinank,
-    formData.serviceCharges,
-    setFormData,
-  ]);
-
-  // Calculate service charge amount and late fee
-  useEffect(() => {
+const ServiceChargeStep: React.FC<ServiceChargeStepProps> = ({ formData, setFormData }) => {
+    const [selectedYear, setSelectedYear] = useState<string>("");
+    const [paymentDate, setPaymentDate] = useState<string>("");
+    const [billedYears, setBilledYears] = useState<string[]>([]);
+  
     const floorType = formData.propertyRecord.property_floor_type;
-    const serviceChargeAmount =
-      floorType === "LGF" ? 10610 : floorType === "UGF" ? 11005 : 0;
+    const baseAmount = floorType === "LGF" ? 10610 : floorType === "UGF" ? 11005 : 0;
+  
+    useEffect(() => {
+      const allotmentDate = formData.propertyRecord.avantan_dinank;
+      const currentDate = new Date().toISOString().split("T")[0];
+      if (allotmentDate) {
+        const years = generateBilledYears(allotmentDate, currentDate);
+        setBilledYears(years);
+      }
+    }, [formData.propertyRecord.avantan_dinank]);
+  
+    const availableYears = useMemo(() => {
+      return billedYears.filter(
+        (year) => !formData.serviceCharges.some((charge: any) => charge.service_charge_financial_year === year)
+      );
+    }, [billedYears, formData.serviceCharges]);
+  
+    useEffect(() => {
+      if (availableYears.length > 0 && !selectedYear) {
+        setSelectedYear(availableYears[0]);
+      }
+    }, [availableYears]);
+  
+    const lateFee = useMemo(() => {
+      return selectedYear && paymentDate ? calculateLateFee(selectedYear, paymentDate, baseAmount) : 0;
+    }, [selectedYear, paymentDate, baseAmount]);
+  
+    const total = baseAmount + lateFee;
+  
+    const handleAdd = () => {
+      const newServiceCharge = {
+        service_charge_financial_year: selectedYear,
+        service_charge_amount: baseAmount,
+        service_charge_late_fee: lateFee,
+        service_charge_payment_date: paymentDate,
+      };
+      setFormData({
+        ...formData,
+        serviceCharges: [...formData.serviceCharges, newServiceCharge],
+      });
+      setSelectedYear("");
+      setPaymentDate("");
+    };
+  
+    return (
+      <div className=" rounded-lg  mx-auto">
 
-    const allotmentFY = getFinancialYearFromDate(
-      formData.propertyRecord.avantan_dinank
-    );
-    const selectedFY =
-      formData.serviceCharges[0]?.service_charge_financial_year || allotmentFY;
-    const paymentDate = formData.serviceCharges[0]?.service_charge_payment_date;
-
-    const lateFee = paymentDate
-      ? calculateServiceChargeLateFee(
-          allotmentFY,
-          selectedFY,
-          paymentDate,
-          serviceChargeAmount
-        )
-      : 0;
-    const totalServiceCharge = serviceChargeAmount + lateFee;
-
-    const currentServiceCharge = formData.serviceCharges[0] || {};
-    if (
-      currentServiceCharge.service_charge_amount !== serviceChargeAmount ||
-      currentServiceCharge.service_charge_late_fee !== lateFee ||
-      currentServiceCharge.service_charge_total !== totalServiceCharge
-    ) {
-      setFormData((prevFormData: any) => ({
-        ...prevFormData,
-        serviceCharges: [
-          {
-            ...(prevFormData.serviceCharges[0] || {}),
-            service_charge_amount: serviceChargeAmount,
-            service_charge_late_fee: lateFee,
-            service_charge_total: totalServiceCharge,
-          },
-        ],
-      }));
-    }
-  }, [
-    formData.propertyRecord.property_floor_type,
-    formData.propertyRecord.avantan_dinank,
-    formData.serviceCharges,
-    setFormData,
-  ]);
-
-  const handleInputChange = (fieldId: string, value: any) => {
-    setFormData({
-      ...formData,
-      serviceCharges: [
-        {
-          ...(formData.serviceCharges[0] || {}),
-          [fieldId]: value === "" ? null : value,
-        },
-      ],
-    });
-  };
-
-  return (
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white pb-2 border-b border-gray-200 dark:border-gray-700">
-        Service Charge Details
-      </h3>
-      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-        Fill in the details for service charges.
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mt-4">
-        {serviceChargeFields.map((field) => {
-          const fieldValue = formData.serviceCharges[0]?.[field.id] || "";
-          return (
-            <div key={field.id} className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {field.label}
-                {field.required && (
-                  <span className="text-red-500 dark:text-red-400 ml-1">*</span>
-                )}
-              </label>
-              {field.type === "select" ? (
-                <select
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                  onChange={(e) => handleInputChange(field.id, e.target.value)}
-                  value={fieldValue}
-                >
-                  <option value="" className="dark:bg-gray-800">
-                    Select option...
-                  </option>
-                  {financialYearOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="dark:bg-gray-800"
-                    >
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === "date" ? (
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                  value={fieldValue}
-                  onChange={(e) => handleInputChange(field.id, e.target.value)}
-                />
-              ) : (
-                <input
-                  type={field.type}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors text-sm shadow-sm"
-                  value={fieldValue}
-                  readOnly={field.readOnly}
-                  onChange={(e) => handleInputChange(field.id, e.target.value)}
-                />
-              )}
-              {errors[field.id] && (
-                <p className="text-red-500 text-xs mt-1">{errors[field.id]}</p>
-              )}
-            </div>
-          );
-        })}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Financial Year</label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded text-black"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            <option value="">Select Year</option>
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+  
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Payment Date</label>
+          <input
+            type="date"
+            className="w-full p-2 border border-gray-300 rounded text-black"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+          />
+        </div>
+  
+        <div className="bg-white text-black p-4 rounded-lg shadow-md mb-4">
+          <p className="mb-1"><strong>Base Amount:</strong> {baseAmount.toFixed(2)}</p>
+          <p className="mb-1"><strong>Late Fee:</strong> {lateFee.toFixed(2)}</p>
+          <p className="text-lg font-semibold"><strong>Total:</strong> {total.toFixed(2)}</p>
+        </div>
+  
+        <button
+          className="w-full bg-blue-200 font-semibold py-2 rounded-lg hover:bg-gray-100 transition"
+          onClick={handleAdd}
+          disabled={!selectedYear || !paymentDate}
+        >
+          Add Service Charge
+        </button>
+  
+        {formData.serviceCharges.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold mb-2">Added Service Charges</h4>
+            <table className="w-full text-left bg-white text-black rounded-lg overflow-hidden shadow-md">
+              <thead>
+                <tr className="bg-gray-200 text-gray-700">
+                  <th className="p-2">Financial Year</th>
+                  <th className="p-2">Base Amount</th>
+                  <th className="p-2">Late Fee</th>
+                  <th className="p-2">Payment Date</th>
+                  <th className="p-2">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.serviceCharges.map((charge: any, index: number) => (
+                  <tr key={index} className="border-t border-gray-300">
+                    <td className="p-2">{charge.service_charge_financial_year}</td>
+                    <td className="p-2">{charge.service_charge_amount.toFixed(2)}</td>
+                    <td className="p-2">{charge.service_charge_late_fee.toFixed(2)}</td>
+                    <td className="p-2">{charge.service_charge_payment_date}</td>
+                    <td className="p-2 font-semibold">{(charge.service_charge_amount + charge.service_charge_late_fee).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
+    );
+  };
 
 export default ServiceChargeStep;

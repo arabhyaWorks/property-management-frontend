@@ -41,7 +41,7 @@ const formSteps: FormStep[] = [
       { id: "pita_pati_ka_naam", label: "पिता/पति का नाम", type: "text", required: true },
       { id: "avanti_ka_sthayi_pata", label: "आवंटी का स्थायी पता", type: "textarea", required: true },
       { id: "avanti_ka_vartaman_pata", label: "आवंटी का वर्तमान पता", type: "textarea", required: true },
-      { id: "mobile_no", label: "मोबाइल नंबर", type: "text", required: true },
+      { id: "mobile_no", label: "मोबाइल नंबर", type: "text", required: false },
       { id: "aadhar_number", label: "आधार नंबर", type: "text" },
       { id: "aadhar_photo", label: "आधार फोटो (max size 200kb)", type: "file", accept: "image/*", maxSize: 200 * 1024 },
       { id: "documents", label: "दस्तावेज़ (PDF only)", type: "file", accept: "application/pdf" },
@@ -294,35 +294,35 @@ export default function CreateNewProperty() {
       }));
     }
 
-    if (fieldId === "aadhar_number") {
-      if (!validateAadhaarNumber(value)) {
-        setErrors((prev) => ({
-          ...prev,
-          aadhar_number: "Aadhaar number must be exactly 12 digits",
-        }));
-      } else {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.aadhar_number;
-          return newErrors;
-        });
-      }
-    }
+    // if (fieldId === "aadhar_number") {
+    //   if (!validateAadhaarNumber(value)) {
+    //     setErrors((prev) => ({
+    //       ...prev,
+    //       aadhar_number: "Aadhaar number must be exactly 12 digits",
+    //     }));
+    //   } else {
+    //     setErrors((prev) => {
+    //       const newErrors = { ...prev };
+    //       delete newErrors.aadhar_number;
+    //       return newErrors;
+    //     });
+    //   }
+    // }
 
-    if (fieldId === "mobile_no") {
-      if (!validateMobileNumber(value)) {
-        setErrors((prev) => ({
-          ...prev,
-          mobile_no: "Mobile number must be exactly 10 digits",
-        }));
-      } else {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.mobile_no;
-          return newErrors;
-        });
-      }
-    }
+    // if (fieldId === "mobile_no") {
+    //   if (!validateMobileNumber(value)) {
+    //     setErrors((prev) => ({
+    //       ...prev,
+    //       mobile_no: "Mobile number must be exactly 10 digits",
+    //     }));
+    //   } else {
+    //     setErrors((prev) => {
+    //       const newErrors = { ...prev };
+    //       delete newErrors.mobile_no;
+    //       return newErrors;
+    //     });
+    //   }
+    // }
 
     if (fieldId === "aadhar_photo" && value) {
       const file = value as File;
@@ -371,13 +371,13 @@ export default function CreateNewProperty() {
 
   const handleNext = () => {
     if (currentStep === 0) {
-      const aadhaarValid = validateAadhaarNumber(formData.propertyRecord.aadhar_number || "");
-      const mobileValid = validateMobileNumber(formData.propertyRecord.mobile_no || "");
+      // const aadhaarValid = validateAadhaarNumber(formData.propertyRecord.aadhar_number || "");
+      // const mobileValid = validateMobileNumber(formData.propertyRecord.mobile_no || "");
 
-      if (!aadhaarValid) setErrors((prev) => ({ ...prev, aadhar_number: "Aadhaar number must be exactly 12 digits" }));
-      if (!mobileValid) setErrors((prev) => ({ ...prev, mobile_no: "Mobile number must be exactly 10 digits" }));
+      // if (!aadhaarValid) setErrors((prev) => ({ ...prev, aadhar_number: "Aadhaar number must be exactly 12 digits" }));
+      // if (!mobileValid) setErrors((prev) => ({ ...prev, mobile_no: "Mobile number must be exactly 10 digits" }));
 
-      if (!aadhaarValid || !mobileValid) return;
+      // if (!aadhaarValid || !mobileValid) return;
     }
 
     setCurrentStep((prev) => Math.min(formSteps.length - 1, prev + 1));
