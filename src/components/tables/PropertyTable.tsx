@@ -388,6 +388,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                   >
                     {[
+                      "avanti_ka_naam",
                       "property_unique_id",
                       "yojna_id",
                       "mobile_no",

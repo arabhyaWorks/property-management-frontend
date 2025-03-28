@@ -636,7 +636,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     parseInt(formData.installmentPlan.ideal_number_of_installments || "1"))) / 365,
                 first_installment_due_date: formatDateToDDMMYYYY(formData.installmentPlan.first_installment_due_date),
             },
-            paymentInstallments: formData.paymentInstallments.map((payment: any) => ({
+            installments: formData.paymentInstallments.map((payment: any) => ({
                 payment_number: payment.payment_number,
                 payment_amount: parseFloat(payment.installment_amount || "0") + parseFloat(payment.interest_amount || "0"),
                 kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
