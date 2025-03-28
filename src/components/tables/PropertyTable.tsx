@@ -240,8 +240,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
           <div className="space-y-6 sm:space-y-0 sm:flex sm:items-start sm:gap-6">
             {/* Search and Columns Section */}
             <div
-            className="flex w-full gap-2"
-            // className=" space-y-4"
+              className="flex w-full gap-2"
+              // className=" space-y-4"
             >
               <div className="flex items-center gap-3">
                 <button
@@ -316,34 +316,34 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
 
               {/* Filters Section */}
               {/* <div className="flex items-center gap-3"> */}
-                <select
-                  value={searchField}
-                  onChange={(e) =>
-                    setSearchField(
-                      e.target.value as "property_unique_id" | "avanti_ka_naam"
-                    )
-                  }
-                  className="min-w-[140px] px-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
-                >
-                  <option value="property_unique_id">Property ID</option>
-                  <option value="avanti_ka_naam">Owner Name</option>
-                </select>
+              <select
+                value={searchField}
+                onChange={(e) =>
+                  setSearchField(
+                    e.target.value as "property_unique_id" | "avanti_ka_naam"
+                  )
+                }
+                className="min-w-[140px] px-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
+              >
+                <option value="property_unique_id">Property ID</option>
+                <option value="avanti_ka_naam">Owner Name</option>
+              </select>
 
-                <div className="relative">
-                  <select
-                    value={selectedYojna}
-                    onChange={(e) => setSelectedYojna(e.target.value)}
-                    className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
-                  >
-                    <option value="">All Yojnas</option>
-                    {yojnas.map((yojna) => (
-                      <option key={yojna.yojna_id} value={yojna.yojna_id}>
-                        {yojna.yojna_name}
-                      </option>
-                    ))}
-                  </select>
-                  <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
-                </div>
+              <div className="relative">
+                <select
+                  value={selectedYojna}
+                  onChange={(e) => setSelectedYojna(e.target.value)}
+                  className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
+                >
+                  <option value="">All Yojnas</option>
+                  {yojnas.map((yojna) => (
+                    <option key={yojna.yojna_id} value={yojna.yojna_id}>
+                      {yojna.yojna_name}
+                    </option>
+                  ))}
+                </select>
+                <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
               {/* </div> */}
             </div>
           </div>
@@ -387,7 +387,15 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     key={field}
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                   >
-                    {field === "property_unique_id" || field === "yojna_id"
+                    {[
+                      "property_unique_id",
+                      "yojna_id",
+                      "mobile_no",
+                      "avanti_sampatti_sankhya",
+                      "kshetrafal",
+                      "jama_dhan_rashid_sankhya",
+                      "bhavan_nirman",
+                    ].includes(field)
                       ? item.propertyRecord[field]
                       : formatValue(item.propertyRecord[field])}
                   </td>
