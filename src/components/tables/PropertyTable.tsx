@@ -17,6 +17,7 @@ import { dataKeys } from "../../data/dataLables";
 interface Yojna {
   yojna_id: string;
   yojna_name: string;
+  sampatti_sreni_list: string[]; // Added to match API response
 }
 
 export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
@@ -33,6 +34,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     "property_unique_id" | "avanti_ka_naam"
   >("property_unique_id");
   const [selectedYojna, setSelectedYojna] = useState<string>(yojna_id);
+  const [selectedSampattiSreni, setSelectedSampattiSreni] = useState<string>(""); // New state for sampatti sreni
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedProperty, setEditedProperty] = useState<any>(null);
@@ -56,6 +58,12 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     direction: "asc" | "desc";
   } | null>(null);
 
+  // Compute sampatti_sreni_list based on selected yojna
+  const selectedYojnaData = yojnas.find((y) => y.yojna_id === selectedYojna);
+  const sampattiSreniList = selectedYojnaData
+    ? selectedYojnaData.sampatti_sreni_list
+    : [];
+
   const toggleColumn = (key: string) => {
     setVisibleColumns((current) => {
       if (current.includes(key)) {
@@ -70,6 +78,12 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     fetchYojnas();
   }, []);
 
+  // Reset selectedSampattiSreni when selectedYojna changes
+  useEffect(() => {
+    setSelectedSampattiSreni("");
+  }, [selectedYojna]);
+
+  // Fetch data with selectedSampattiSreni as a dependency
   useEffect(() => {
     fetchData();
   }, [
@@ -78,6 +92,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     searchQuery,
     searchField,
     selectedYojna,
+    selectedSampattiSreni, // Added to dependencies
     yojna_id,
   ]);
 
@@ -104,6 +119,10 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
 
       if (selectedYojna) {
         params.yojna_id = selectedYojna;
+      }
+
+      if (selectedSampattiSreni) {
+        params.sampatti_sreni = selectedSampattiSreni; // Include sampatti_sreni in params
       }
 
       const response = await getProperties(params);
@@ -238,11 +257,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto p-6">
           <div className="space-y-6 sm:space-y-0 sm:flex sm:items-start sm:gap-6">
-            {/* Search and Columns Section */}
-            <div
-              className="flex w-full gap-2"
-              // className=" space-y-4"
-            >
+            <div className="flex w-full gap-2">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowColumnSelector(!showColumnSelector)}
@@ -252,7 +267,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                   <span>Columns</span>
                 </button>
 
-                {/* Column Selector Modal */}
                 {showColumnSelector && (
                   <>
                     <div
@@ -296,8 +310,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                 )}
               </div>
 
-              {/* Search Input */}
-              <div className=" w-full">
+              <div className="w-full">
                 <div className="relative">
                   <input
                     type="text"
@@ -314,8 +327,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                 </div>
               </div>
 
-              {/* Filters Section */}
-              {/* <div className="flex items-center gap-3"> */}
               <select
                 value={searchField}
                 onChange={(e) =>
@@ -344,7 +355,25 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                 </select>
                 <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
-              {/* </div> */}
+
+              {/* Sampatti Sreni Filter Dropdown */}
+              {selectedYojna && (
+                <div className="relative">
+                  <select
+                    value={selectedSampattiSreni}
+                    onChange={(e) => setSelectedSampattiSreni(e.target.value)}
+                    className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:border-gray-300 transition-colors"
+                  >
+                    <option value="">All Sampatti Sreni</option>
+                    {sampattiSreniList.map((sreni) => (
+                      <option key={sreni} value={sreni}>
+                        {sreni}
+                      </option>
+                    ))}
+                  </select>
+                  <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -554,7 +583,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
             <div className="p-6">
               {isEditing ? (
                 <div className="space-y-8">
-                  {/* General Information (Editable) */}
                   <div className="bg-gray-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       General Information
@@ -668,7 +696,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Property Details (Editable) */}
                   <div className="bg-white rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       Property Details
@@ -743,7 +770,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Financial Information (Editable) */}
                   <div className="bg-blue-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       Financial Information
@@ -863,7 +889,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Installment Plan (Editable) */}
                   <div className="bg-white rounded-lg border border-gray-200 p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       Installment Plan
@@ -961,7 +986,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Installment Payments (Editable) */}
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
                       <h4 className="text-lg font-semibold text-gray-900">
@@ -1149,7 +1173,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                         </tbody>
                       </table>
                     </div>
-                    {/* Add New Installment */}
                     <div className="p-6 border-t border-gray-200">
                       <h5 className="text-sm font-medium text-gray-900 mb-4">
                         Add New Installment
@@ -1249,7 +1272,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Service Charges (Editable) */}
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
                       <h4 className="text-lg font-semibold text-gray-900">
@@ -1371,7 +1393,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                         </tbody>
                       </table>
                     </div>
-                    {/* Add New Service Charge */}
                     <div className="p-6 border-t border-gray-200">
                       <h5 className="text-sm font-medium text-gray-900 mb-4">
                         Add New Service Charge
@@ -1437,7 +1458,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                 </div>
               ) : (
                 <div className="space-y-8">
-                  {/* General Information (View Mode) */}
                   <div className="bg-gray-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       General Information
@@ -1496,7 +1516,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Property Details (View Mode) */}
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">
                     Property Details
                   </h4>
@@ -1530,7 +1549,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Financial Information (View Mode) */}
                   <div className="bg-blue-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       Financial Information
@@ -1579,7 +1597,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Installment Plan (View Mode) */}
                   <div className="bg-white rounded-lg border border-gray-200 p-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       Installment Plan
@@ -1627,7 +1644,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Installment Payments (View Mode) */}
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
                       <h4 className="text-lg font-semibold text-gray-900">
@@ -1707,7 +1723,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     </div>
                   </div>
 
-                  {/* Service Charges (View Mode) */}
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
                       <h4 className="text-lg font-semibold text-gray-900">
