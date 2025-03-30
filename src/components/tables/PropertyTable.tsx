@@ -417,6 +417,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                   >
                     {[
+                      "anya",
                       "avanti_ka_naam",
                       "property_unique_id",
                       "yojna_id",
@@ -427,7 +428,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                       "bhavan_nirman",
                       "pita_pati_ka_naam",
                       "avanti_ka_sthayi_pata",
-                      "avanti_ka_vartaman_pata"
+                      "avanti_ka_vartaman_pata",
+                      "aadhar_number"
                     ].includes(field)
                       ? item.propertyRecord[field]
                       : formatValue(item.propertyRecord[field])}

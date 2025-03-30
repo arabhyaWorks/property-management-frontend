@@ -9,11 +9,15 @@ import { PaymentDetails } from "./pages/PaymentDetails";
 import { Users } from "./pages/Users";
 import { Settings } from "./pages/Settings";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 import CreateNewProperty from "./pages/NewProperty";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
+import PaymentForm from "./components/paymentForm";
+
+// property_management_dev
+// This is the version of the property management system frontend as we are going to implement major changes in the database structure and the functionality to implement varasat, namantaran, logs, etc. we are going to change the database itself and shift to new database.
 
 export default function App() {
   return (
@@ -45,3 +49,20 @@ export default function App() {
 }
 
 
+
+// export default function App() {
+//   return (
+//     <ThemeProvider>
+//       <LanguageProvider>
+//         <AuthProvider>
+//           <BrowserRouter>
+//             <Routes>
+//               {/* <Route path="/" element={<App />} /> */}
+//               <Route path="/" element={<PaymentForm />} />
+//             </Routes>
+//           </BrowserRouter>
+//         </AuthProvider>
+//       </LanguageProvider>
+//     </ThemeProvider>
+//   );
+// }
