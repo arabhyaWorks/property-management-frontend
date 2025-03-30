@@ -16,6 +16,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
 import PaymentForm from "./components/paymentForm";
 
+// Implementation of Edit, namantaran and varasat from now on
 // property_management_dev
 // This is the version of the property management system frontend as we are going to implement major changes in the database structure and the functionality to implement varasat, namantaran, logs, etc. we are going to change the database itself and shift to new database.
 
