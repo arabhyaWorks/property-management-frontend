@@ -16,6 +16,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
 import PaymentForm from "./components/paymentForm";
 import { PropertyDetail } from "./pages/PropertyDetail";
+import EditProperty from "./pages/EditProperty";
 
 // Implementation of Edit, namantaran and varasat from now on
 // property_management_dev
@@ -38,6 +39,7 @@ export default function App() {
 
                 <Route path="/yojna/:yojnaId" element={<Property />} />
                 <Route path="/property/:property_id" element={<PropertyDetail />} />
+                <Route path="/edit-property/:property_id" element={<EditProperty />} />
                 <Route path="/AddProperty" element={<CreateNewProperty />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/payment-details" element={<PaymentDetails />} />

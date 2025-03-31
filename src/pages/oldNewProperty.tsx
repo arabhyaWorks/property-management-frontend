@@ -3,8 +3,8 @@ import { X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import BASE_URL from "../data/endpoint";
-import ServiceChargeStep from "../components/propertyCreation/serviceChargeStep";
 import formSteps from "../data/formSteps";
+import ServiceChargeStep from "../components/propertyCreation/serviceChargeStep";
 
 // Utility Functions
 const formatIndianNumber = (num: number): string => {
@@ -28,9 +28,8 @@ const addMonths = (dateString: string, months: number): string => {
     date.getMonth() + months,
     date.getDate()
   );
-  // If day overflows, set to last day of previous month
   if (date.getDate() !== newDate.getDate()) {
-    newDate.setDate(0);
+    newDate.setDate(0); // Set to last day of previous month if day overflows
   }
   const year = newDate.getFullYear();
   const month = String(newDate.getMonth() + 1).padStart(2, "0");
@@ -63,7 +62,6 @@ const formatDateToDDMMYYYY = (dateString: string): string | null => {
   return `${day}-${month}-${year}`;
 };
 
-// (Optional) Aadhaar & mobile validations
 const validateAadhaarNumber = (value: string): boolean => {
   const aadhaarRegex = /^\d{12}$/;
   return aadhaarRegex.test(value);
@@ -77,48 +75,41 @@ const validateMobileNumber = (value: string): boolean => {
 // Main Component
 export default function CreateNewProperty() {
   const [currentStep, setCurrentStep] = useState<number>(0);
-
-  // We'll split the data so it matches the new structure
+  const [sampattiSreniOptions, setSampattiSreniOptions] = useState<string[]>(
+    []
+  );
   const [formData, setFormData] = useState<any>({
-    propertyRecord: {}, // Basic allottee / personal info
-    propertyRecordDetail: {}, // Detailed property financial info
-    installments: [], // Payment installments
-    serviceCharges: [], // Service charge data
+    propertyRecord: {},
+    installmentPlan: {},
+    paymentInstallments: [],
+    serviceCharges: [],
   });
-
   const [currentPaymentEntry, setCurrentPaymentEntry] = useState<any>({
     installment_amount: "",
     interest_amount: "",
     late_fee: "",
     payment_date: "",
   });
-
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // For controlling selects
   const [yojnas, setYojnas] = useState<any[]>([]);
-  const [sampattiSreniOptions, setSampattiSreniOptions] = useState<string[]>(
-    []
-  );
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Fetching yojnas
+  // Data Fetching
   useEffect(() => {
     const fetchYojnas = async () => {
       try {
-        const response = await fetch(BASE_URL + "/api/yojna");
+        const response = await fetch(BASE_URL + "/api/yojnas");
         const data = await response.json();
         setYojnas(data.data);
       } catch (error) {
-        console.error("योजनाओं को प्राप्त करने में त्रुटि:", error);
+        console.error("योोजनाओं को प्राप्त करने में त्रुटि:", error);
       }
     };
     fetchYojnas();
   }, []);
 
-  // Whenever yojna_id changes, update the detail fields from that yojna
   useEffect(() => {
     const selectedYojna = yojnas.find(
       (y) => y.yojna_id === formData.propertyRecord.yojna_id
@@ -126,93 +117,77 @@ export default function CreateNewProperty() {
     if (selectedYojna) {
       setFormData((prev: any) => ({
         ...prev,
-        propertyRecordDetail: {
-          ...prev.propertyRecordDetail,
+        installmentPlan: {
+          ...prev.installmentPlan,
           interest_rate: selectedYojna.interest_rate,
           time_period: selectedYojna.time_period,
           ideal_number_of_installments: selectedYojna.number_of_installments,
         },
       }));
-      // Update sampatti_sreni dropdown options
+      // Update sampatti_sreni options
       setSampattiSreniOptions(selectedYojna.sampatti_sreni_list || []);
     } else {
-      setSampattiSreniOptions([]);
+      setSampattiSreniOptions([]); // Reset options if no yojna is selected
     }
   }, [formData.propertyRecord.yojna_id, yojnas]);
 
   // Calculate first_installment_due_date based on avantan_dinank
   useEffect(() => {
-    const avantanDinank = formData.propertyRecordDetail.avantan_dinank;
+    const avantanDinank = formData.propertyRecord.avantan_dinank;
     if (avantanDinank) {
       const firstDueDate = addMonths(avantanDinank, 1);
       setFormData((prev: any) => ({
         ...prev,
-        propertyRecordDetail: {
-          ...prev.propertyRecordDetail,
+        installmentPlan: {
+          ...prev.installmentPlan,
           first_installment_due_date: firstDueDate,
         },
       }));
     }
-  }, [formData.propertyRecordDetail.avantan_dinank]);
+  }, [formData.propertyRecord.avantan_dinank]);
 
-  // Updated avshesh_dhanrashi formula:
-  // avshesh_dhanrashi = auction_keemat - (panjikaran_dhanrashi + avantan_dhanrashi + avshesh_vikray_mulya_ekmusht_jama_dhanrashi)
+  // Automatic Calculations
   useEffect(() => {
     const auctionKeemat = parseFloat(
-      formData.propertyRecordDetail.auction_keemat || "0"
+      formData.propertyRecord.auction_keemat || "0"
     );
     const panjikaranDhanrashi = parseFloat(
-      formData.propertyRecordDetail.panjikaran_dhanrashi || "0"
+      formData.propertyRecord.panjikaran_dhanrashi || "0"
     );
     const avantanDhanrashi = parseFloat(
-      formData.propertyRecordDetail.avantan_dhanrashi || "0"
+      formData.propertyRecord.avantan_dhanrashi || "0"
     );
-    const avsheshVikrayMulyaEkmusht = parseFloat(
-      formData.propertyRecordDetail
-        .avshesh_vikray_mulya_ekmusht_jama_dhanrashi || "0"
-    );
-    // ekmusht_jama_dhanrashi treated as discount on avshesh_vikray_mulya_ekmusht_jama_dhanrashi
-    const ekmusht_jama_dhanrashi = parseFloat(
-      formData.propertyRecordDetail.ekmusht_jama_dhanrashi || "0"
-    );
-
-    const computedAvshesh =
-      auctionKeemat -
-      (panjikaranDhanrashi +
-        avantanDhanrashi +
-        avsheshVikrayMulyaEkmusht +
-        ekmusht_jama_dhanrashi);
+    const calculatedAvshesh =
+      auctionKeemat - (panjikaranDhanrashi + avantanDhanrashi);
 
     setFormData((prev: any) => ({
       ...prev,
-      propertyRecordDetail: {
-        ...prev.propertyRecordDetail,
+      installmentPlan: {
+        ...prev.installmentPlan,
         avshesh_dhanrashi:
-          computedAvshesh > 0 ? computedAvshesh.toFixed(2) : "0.00",
+          calculatedAvshesh > 0 ? calculatedAvshesh.toFixed(2) : "0.00",
       },
     }));
   }, [
-    formData.propertyRecordDetail.auction_keemat,
-    formData.propertyRecordDetail.panjikaran_dhanrashi,
-    formData.propertyRecordDetail.avantan_dhanrashi,
-    formData.propertyRecordDetail.avshesh_vikray_mulya_ekmusht_jama_dhanrashi,
-    formData.propertyRecordDetail.ekmusht_jama_dhanrashi,
+    formData.propertyRecord.auction_keemat,
+    formData.propertyRecord.panjikaran_dhanrashi,
+    formData.propertyRecord.avantan_dhanrashi,
   ]);
 
-  // When on step 4 (adding "भुगतान किश्त विवरण"), prefill installment_amount & interest_amount
+  // Prepopulate installment_amount and interest_amount
   useEffect(() => {
     if (currentStep === 4 && !currentPaymentEntry.installment_amount) {
       const avsheshDhanrashi = parseFloat(
-        formData.propertyRecordDetail.avshesh_dhanrashi || "0"
+        formData.installmentPlan.avshesh_dhanrashi || "0"
       );
       const interestRate = parseFloat(
-        formData.propertyRecordDetail.interest_rate || "0"
+        formData.installmentPlan.interest_rate || "0"
       );
       const timePeriod = parseFloat(
-        formData.propertyRecordDetail.time_period || "0"
+        formData.installmentPlan.time_period || "0"
       );
       const idealNumberOfInstallments = parseInt(
-        formData.propertyRecordDetail.ideal_number_of_installments || "1"
+        formData.installmentPlan.ideal_number_of_installments || "1"
       );
 
       const totalInterestAmount =
@@ -229,34 +204,33 @@ export default function CreateNewProperty() {
     }
   }, [
     currentStep,
-    formData.propertyRecordDetail,
+    formData.installmentPlan,
     currentPaymentEntry.installment_amount,
   ]);
 
-  // Calculate late_fee for the current payment entry on step 4
+  // Calculate late_fee for current payment entry
   useEffect(() => {
     if (
       currentStep === 4 &&
-      formData.propertyRecordDetail.first_installment_due_date
+      formData.installmentPlan.first_installment_due_date
     ) {
-      const installmentNumber = formData.installments.length + 1;
+      const installmentNumber = formData.paymentInstallments.length + 1;
       const dueDate = addMonths(
-        formData.propertyRecordDetail.first_installment_due_date,
+        formData.installmentPlan.first_installment_due_date,
         (installmentNumber - 1) * 3
       );
       const paymentDate = currentPaymentEntry.payment_date;
-
       const avsheshDhanrashi = parseFloat(
-        formData.propertyRecordDetail.avshesh_dhanrashi || "0"
+        formData.installmentPlan.avshesh_dhanrashi || "0"
       );
       const interestRate = parseFloat(
-        formData.propertyRecordDetail.interest_rate || "0"
+        formData.installmentPlan.interest_rate || "0"
       );
       const timePeriod = parseFloat(
-        formData.propertyRecordDetail.time_period || "0"
+        formData.installmentPlan.time_period || "0"
       );
       const idealNumberOfInstallments = parseInt(
-        formData.propertyRecordDetail.ideal_number_of_installments || "1"
+        formData.installmentPlan.ideal_number_of_installments || "1"
       );
 
       const totalInterestAmount =
@@ -264,7 +238,7 @@ export default function CreateNewProperty() {
       const adjustedInterest = totalInterestAmount / 2;
       const kulYog = avsheshDhanrashi + adjustedInterest;
       const idealInstallmentAmount = kulYog / idealNumberOfInstallments;
-      const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365; // example logic
+      const lateFeePerDay = (0.18 * idealInstallmentAmount) / 365;
 
       if (paymentDate && dueDate) {
         const lateFee = calculateLateFee(dueDate, paymentDate, lateFeePerDay);
@@ -276,21 +250,19 @@ export default function CreateNewProperty() {
     }
   }, [
     currentPaymentEntry.payment_date,
-    formData.propertyRecordDetail.first_installment_due_date,
-    formData.installments.length,
+    formData.installmentPlan.first_installment_due_date,
+    formData.paymentInstallments.length,
     currentStep,
   ]);
 
   // Handlers
   const handleInputChange = (section: string, fieldId: string, value: any) => {
-    if (section === "installments") {
-      // Step 4 data
+    if (section === "paymentInstallments") {
       setCurrentPaymentEntry((prev: any) => ({
         ...prev,
         [fieldId]: value === "" ? null : value,
       }));
     } else {
-      // propertyRecord / propertyRecordDetail / serviceCharges
       setFormData((prev: any) => ({
         ...prev,
         [section]: {
@@ -300,7 +272,6 @@ export default function CreateNewProperty() {
       }));
     }
 
-    // Handle file validations
     if (fieldId === "aadhar_photo" && value) {
       const file = value as File;
       const maxSize = 200 * 1024;
@@ -334,16 +305,16 @@ export default function CreateNewProperty() {
       return;
     }
 
-    const installmentNumber = formData.installments.length + 1;
+    const installmentNumber = formData.paymentInstallments.length + 1;
     const dueDate = addMonths(
-      formData.propertyRecordDetail.first_installment_due_date,
+      formData.installmentPlan.first_installment_due_date,
       (installmentNumber - 1) * 3
     );
 
     setFormData((prev: any) => ({
       ...prev,
-      installments: [
-        ...prev.installments,
+      paymentInstallments: [
+        ...prev.paymentInstallments,
         {
           ...currentPaymentEntry,
           payment_number: installmentNumber,
@@ -364,14 +335,11 @@ export default function CreateNewProperty() {
     setCurrentStep((prev) => Math.min(formSteps.length - 1, prev + 1));
   };
 
-  const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(0, prev - 1));
-  };
+  const handlePrevious = () => setCurrentStep((prev) => Math.max(0, prev - 1));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Only submit on the final step
     if (currentStep !== 6) return;
 
     const confirmSubmission = window.confirm(
@@ -382,153 +350,110 @@ export default function CreateNewProperty() {
     setIsSubmitting(true);
 
     try {
-      // Prepare final request body
-      // propertyRecord -> personal info
-      // propertyRecordDetail -> all property details including the old "installmentPlan" fields
-      // installments -> from formData.installments
-      // serviceCharges -> from formData.serviceCharges
-
-      // Convert date fields from yyyy-mm-dd to dd-mm-yyyy
-      const pr = formData.propertyRecord;
-      const prd = formData.propertyRecordDetail;
-
-      // (Boolean) to "Yes"/"No" for bhavan_nirman if needed, else keep your logic
-      const bhavanNirmanValue =
-        prd.bhavan_nirman === "true" || prd.bhavan_nirman === true
-          ? "Yes"
-          : "No";
-
-      // Build final shape
       const payload = {
         propertyRecord: {
-          yojna_id: pr.yojna_id,
-          avanti_ka_naam: pr.avanti_ka_naam,
-          pita_pati_ka_naam: pr.pita_pati_ka_naam,
-          avanti_ka_sthayi_pata: pr.avanti_ka_sthayi_pata,
-          avanti_ka_vartaman_pata: pr.avanti_ka_vartaman_pata,
-          mobile_no: pr.mobile_no,
-          kabja_dinank: formatDateToDDMMYYYY(prd.kabja_dinank), // From "संपत्ति विवरण"
-          documentation_shulk: 0.0, // If you have a separate input for this, set it accordingly
-          aadhar_number: pr.aadhar_number,
-          // If you are uploading the Aadhaar photo to S3, you'd store the URL here. For now we just keep placeholder:
-          aadhar_photo_link:
-            pr.aadhar_photo_link || "https://example.com/aadhar.jpg",
-          documents_link: pr.documents_link || "https://example.com/doc.pdf",
+          ...formData.propertyRecord,
+          bhavan_nirman:
+            formData.propertyRecord.bhavan_nirman === "true" ? "हाँ" : "नहीं",
+          panjikaran_dinank: formatDateToDDMMYYYY(
+            formData.propertyRecord.panjikaran_dinank
+          ),
+          avantan_dinank: formatDateToDDMMYYYY(
+            formData.propertyRecord.avantan_dinank
+          ),
+          kabja_dinank: formatDateToDDMMYYYY(
+            formData.propertyRecord.kabja_dinank
+          ),
+          nibandhan_dinank: formatDateToDDMMYYYY(
+            formData.propertyRecord.nibandhan_dinank
+          ),
         },
-        propertyRecordDetail: {
-          sampatti_sreni: prd.sampatti_sreni,
-          avanti_sampatti_sankhya: prd.avanti_sampatti_sankhya,
-          panjikaran_dhanrashi: parseFloat(prd.panjikaran_dhanrashi || "0"),
-          panjikaran_dinank: formatDateToDDMMYYYY(prd.panjikaran_dinank),
-          avantan_dhanrashi: parseFloat(prd.avantan_dhanrashi || "0"),
-          avantan_dinank: formatDateToDDMMYYYY(prd.avantan_dinank),
-          vikray_mulya: parseFloat(prd.vikray_mulya || "0"),
-          free_hold_dhanrashi:
-            parseFloat(prd.free_hold_dhanrashi || "0") || null,
-          auction_keemat: parseFloat(prd.auction_keemat || "0"),
-          lease_rent_dhanrashi:
-            parseFloat(prd.lease_rent_dhanrashi || "0") || null,
-          park_charge: parseFloat(prd.park_charge || "0") || null,
-          corner_charge: parseFloat(prd.corner_charge || "0") || null,
-          avshesh_vikray_mulya_ekmusht_jama_dhanrashi: parseFloat(
-            prd.avshesh_vikray_mulya_ekmusht_jama_dhanrashi || "0"
+        installmentPlan: {
+          avshesh_dhanrashi: parseFloat(
+            formData.installmentPlan.avshesh_dhanrashi || "0"
           ),
-          avshesh_vikray_mulya_ekmusht_jama_dinank: formatDateToDDMMYYYY(
-            prd.avshesh_vikray_mulya_ekmusht_jama_dinank
+          interest_rate: parseFloat(
+            formData.installmentPlan.interest_rate || "0"
           ),
-          ekmusht_jama_dhanrashi:
-            parseFloat(prd.ekmusht_jama_dhanrashi || "0") || 0,
-          byaj_dhanrashi: parseFloat(prd.byaj_dhanrashi || "0") || 0,
-          dinank: formatDateToDDMMYYYY(prd.dinank),
-          kshetrafal: parseFloat(prd.kshetrafal || "0") || null,
-          atirikt_bhoomi_ki_dhanrashi: parseFloat(
-            prd.atirikt_bhoomi_ki_dhanrashi || "0"
-          ),
-          punarjivit_shulk: parseFloat(prd.punarjivit_shulk || "0"),
-          praman_patra_shulk: parseFloat(prd.praman_patra_shulk || "0"),
-          vigyapan_shulk: parseFloat(prd.vigyapan_shulk || "0"),
-          nibandhan_shulk: parseFloat(prd.nibandhan_shulk || "0"),
-          nibandhan_dinank: formatDateToDDMMYYYY(prd.nibandhan_dinank),
-          patta_bhilekh_dinank: null, // If applicable
-          bhavan_manchitra_swikrit_manchitra: null, // If applicable
-          bhavan_nirman: bhavanNirmanValue,
-          jama_dhan_rashi_dinank: null, // If applicable
-          jama_dhan_rashid_sankhya: null, // If applicable
-          sewer_connection_water_connection_charge: 0.0, // If you have an input for this, set accordingly
-          labansh: prd.labansh || "",
-          anya: prd.anya || "",
-          abhiyookti: prd.abhiyookti || "",
-          property_floor_type: prd.property_floor_type || "",
-          // The installmentPlan fields merged here:
-          avshesh_dhanrashi: parseFloat(prd.avshesh_dhanrashi || "0"),
-          interest_rate: parseFloat(prd.interest_rate || "0"),
-          time_period: parseFloat(prd.time_period || "0"),
+          time_period: parseFloat(formData.installmentPlan.time_period || "0"),
           total_interest_amount:
-            (parseFloat(prd.avshesh_dhanrashi || "0") *
-              parseFloat(prd.interest_rate || "0") *
-              parseFloat(prd.time_period || "0")) /
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+              parseFloat(formData.installmentPlan.interest_rate || "0") *
+              parseFloat(formData.installmentPlan.time_period || "0")) /
             100,
           total_interest_amount_div_2:
-            (parseFloat(prd.avshesh_dhanrashi || "0") *
-              parseFloat(prd.interest_rate || "0") *
-              parseFloat(prd.time_period || "0")) /
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+              parseFloat(formData.installmentPlan.interest_rate || "0") *
+              parseFloat(formData.installmentPlan.time_period || "0")) /
             100 /
             2,
           kul_yog:
-            parseFloat(prd.avshesh_dhanrashi || "0") +
-            (parseFloat(prd.avshesh_dhanrashi || "0") *
-              parseFloat(prd.interest_rate || "0") *
-              parseFloat(prd.time_period || "0")) /
+            parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") +
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+              parseFloat(formData.installmentPlan.interest_rate || "0") *
+              parseFloat(formData.installmentPlan.time_period || "0")) /
+              100 /
+              2,
+          remaining_balance:
+            parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") +
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+              parseFloat(formData.installmentPlan.interest_rate || "0") *
+              parseFloat(formData.installmentPlan.time_period || "0")) /
               100 /
               2,
           ideal_number_of_installments: parseInt(
-            prd.ideal_number_of_installments || "1"
+            formData.installmentPlan.ideal_number_of_installments || "1"
           ),
-          ideal_installment_amount_per_installment: (() => {
-            const base =
-              parseFloat(prd.avshesh_dhanrashi || "0") +
-              (parseFloat(prd.avshesh_dhanrashi || "0") *
-                parseFloat(prd.interest_rate || "0") *
-                parseFloat(prd.time_period || "0")) /
+          ideal_installment_amount_per_installment:
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") +
+              (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+                parseFloat(formData.installmentPlan.interest_rate || "0") *
+                parseFloat(formData.installmentPlan.time_period || "0")) /
                 100 /
-                2;
-            const n = parseInt(prd.ideal_number_of_installments || "1");
-            return base / n;
-          })(),
+                2) /
+            parseInt(
+              formData.installmentPlan.ideal_number_of_installments || "1"
+            ),
           ideal_kisht_mool:
-            parseFloat(prd.avshesh_dhanrashi || "0") /
-            parseInt(prd.ideal_number_of_installments || "1"),
-          ideal_kisht_byaj: (() => {
-            const totalInterest =
-              (parseFloat(prd.avshesh_dhanrashi || "0") *
-                parseFloat(prd.interest_rate || "0") *
-                parseFloat(prd.time_period || "0")) /
-              100;
-            const halfInt = totalInterest / 2;
-            const n = parseInt(prd.ideal_number_of_installments || "1");
-            return halfInt / n;
-          })(),
-          late_fee_per_day: (() => {
-            const base =
-              parseFloat(prd.avshesh_dhanrashi || "0") +
-              (parseFloat(prd.avshesh_dhanrashi || "0") *
-                parseFloat(prd.interest_rate || "0") *
-                parseFloat(prd.time_period || "0")) /
-                100 /
-                2;
-            const n = parseInt(prd.ideal_number_of_installments || "1");
-            const ideal = base / n;
-            return (0.18 * ideal) / 365;
-          })(),
+            parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") /
+            parseInt(
+              formData.installmentPlan.ideal_number_of_installments || "1"
+            ),
+          ideal_kisht_byaj:
+            (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+              parseFloat(formData.installmentPlan.interest_rate || "0") *
+              parseFloat(formData.installmentPlan.time_period || "0")) /
+            100 /
+            2 /
+            parseInt(
+              formData.installmentPlan.ideal_number_of_installments || "1"
+            ),
+          late_fee_per_day:
+            (0.18 *
+              ((parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") +
+                (parseFloat(formData.installmentPlan.avshesh_dhanrashi || "0") *
+                  parseFloat(formData.installmentPlan.interest_rate || "0") *
+                  parseFloat(formData.installmentPlan.time_period || "0")) /
+                  100 /
+                  2) /
+                parseInt(
+                  formData.installmentPlan.ideal_number_of_installments || "1"
+                ))) /
+            365,
           first_installment_due_date: formatDateToDDMMYYYY(
-            prd.first_installment_due_date
+            formData.installmentPlan.first_installment_due_date
           ),
         },
-        installments: formData.installments.map((payment: any) => {
-          const payAmount =
+        installments: formData.paymentInstallments.map((payment: any) => ({
+          payment_number: payment.payment_number,
+          payment_amount:
             parseFloat(payment.installment_amount || "0") +
-            parseFloat(payment.interest_amount || "0");
-          const daysDelayed =
+            parseFloat(payment.interest_amount || "0"),
+          kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
+          kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
+          payment_due_date: formatDateToDDMMYYYY(payment.due_date),
+          payment_date: formatDateToDDMMYYYY(payment.payment_date),
+          number_of_days_delayed:
             payment.payment_date && payment.due_date
               ? Math.max(
                   0,
@@ -538,58 +463,44 @@ export default function CreateNewProperty() {
                       (1000 * 3600 * 24)
                   )
                 )
-              : 0;
-          return {
-            payment_number: payment.payment_number,
-            payment_amount: payAmount,
-            kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
-            kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
-            payment_due_date: formatDateToDDMMYYYY(payment.due_date),
-            payment_date: formatDateToDDMMYYYY(payment.payment_date),
-            number_of_days_delayed: daysDelayed,
-            late_fee_amount: parseFloat(payment.late_fee || "0"),
-            total_payment_amount_with_late_fee:
-              payAmount + parseFloat(payment.late_fee || "0"),
-          };
-        }),
+              : 0,
+          late_fee_amount: parseFloat(payment.late_fee || "0"),
+          total_payment_amount_with_late_fee:
+            parseFloat(payment.installment_amount || "0") +
+            parseFloat(payment.interest_amount || "0") +
+            parseFloat(payment.late_fee || "0"),
+        })),
         serviceCharges: formData.serviceCharges.map((charge: any) => ({
           service_charge_financial_year: charge.service_charge_financial_year,
-          service_charge_amount: parseFloat(
-            charge.service_charge_amount || "0"
-          ),
-          service_charge_late_fee: parseFloat(
-            charge.service_charge_late_fee || "0"
-          ),
+          service_charge_amount: charge.service_charge_amount,
+          service_charge_late_fee: charge.service_charge_late_fee,
           service_charge_total:
-            parseFloat(charge.service_charge_amount || "0") +
-            parseFloat(charge.service_charge_late_fee || "0"),
+            (charge.service_charge_amount || 0) +
+            (charge.service_charge_late_fee || 0),
           service_charge_payment_date: formatDateToDDMMYYYY(
             charge.service_charge_payment_date
           ),
         })),
       };
 
-      // Send POST request to new endpoint
-      const response = await fetch(`${BASE_URL}/properties`, {
+      const response = await fetch(`${BASE_URL}/api/properties`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization if needed:
           // 'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
+
       if (!response.ok) {
         throw new Error(result.message || "Failed to create property");
       }
 
-      // Optionally redirect after creation
-      // For example, if payload.propertyRecord.yojna_id is used:
       const yojnaId = payload.propertyRecord.yojna_id;
       window.location.href = `/yojna/${yojnaId}`;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Submission Error:", error);
       alert(`प्रॉपर्टी सबमिट करने में त्रुटि: ${error.message}`);
     } finally {
@@ -597,24 +508,18 @@ export default function CreateNewProperty() {
     }
   };
 
-  // Step -> which part of formData to update
-  // 0 -> propertyRecord
-  // 1 -> propertyRecordDetail
-  // 2 -> propertyRecordDetail
-  // 3 -> propertyRecordDetail
-  // 4 -> installments
-  // 5 -> propertyRecordDetail
-  // 6 -> serviceCharges
+  // Step -> State Section Mapping
   const sectionMap: { [key: number]: string } = {
     0: "propertyRecord",
-    1: "propertyRecordDetail",
-    2: "propertyRecordDetail",
-    3: "propertyRecordDetail",
-    4: "installments",
-    5: "propertyRecordDetail",
+    1: "propertyRecord",
+    2: "propertyRecord",
+    3: "installmentPlan",
+    4: "paymentInstallments",
+    5: "propertyRecord",
     6: "serviceCharges",
   };
 
+  // Rendering
   return (
     <DashboardLayout>
       <div className="bg-white dark:bg-gray-800 w-full">
@@ -664,7 +569,6 @@ export default function CreateNewProperty() {
               </div>
 
               {currentStep === 6 ? (
-                // The dedicated service charge step
                 <ServiceChargeStep
                   formData={formData}
                   setFormData={setFormData}
@@ -675,11 +579,9 @@ export default function CreateNewProperty() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                   {formSteps[currentStep].fields.map((field) => {
                     let fieldValue: any = "";
-                    if (sectionMap[currentStep] === "installments") {
-                      // Step 4
+                    if (sectionMap[currentStep] === "paymentInstallments") {
                       fieldValue = currentPaymentEntry[field.id] || "";
                     } else {
-                      // propertyRecord / propertyRecordDetail / serviceCharges
                       fieldValue =
                         formData[sectionMap[currentStep]][field.id] || "";
                     }
@@ -834,23 +736,20 @@ export default function CreateNewProperty() {
                 </div>
               )}
 
-              {/* If we're on step 4 (installment creation), show installment details */}
               {currentStep === 4 &&
-                formData.propertyRecordDetail.first_installment_due_date && (
+                formData.installmentPlan.first_installment_due_date && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      किस्त संख्या: {formData.installments.length + 1}
+                      किस्त संख्या: {formData.paymentInstallments.length + 1}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      किस्त देय तिथि:
-                      {" " +
-                        formatDateToDDMMYYYY(
-                          addMonths(
-                            formData.propertyRecordDetail
-                              .first_installment_due_date,
-                            formData.installments.length * 3
-                          )
-                        )}
+                      किस्त देय कि तिथि :{" "}
+                      {formatDateToDDMMYYYY(
+                        addMonths(
+                          formData.installmentPlan.first_installment_due_date,
+                          formData.paymentInstallments.length * 3
+                        )
+                      )}
                     </p>
                   </div>
                 )}
@@ -865,7 +764,7 @@ export default function CreateNewProperty() {
                     भुगतान जोड़ें
                   </button>
 
-                  {formData.installments.length > 0 && (
+                  {formData.paymentInstallments.length > 0 && (
                     <div className="mt-6 overflow-x-auto">
                       <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
                         <thead>
@@ -894,7 +793,7 @@ export default function CreateNewProperty() {
                           </tr>
                         </thead>
                         <tbody>
-                          {formData.installments.map(
+                          {formData.paymentInstallments.map(
                             (payment: any, index: number) => {
                               const totalPaymentAmount =
                                 parseFloat(payment.installment_amount || "0") +
@@ -945,7 +844,6 @@ export default function CreateNewProperty() {
                 </div>
               )}
 
-              {/* Step 3 summary: किश्त योजना सारांश */}
               {currentStep === 3 && (
                 <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -953,19 +851,20 @@ export default function CreateNewProperty() {
                   </h4>
                   {(() => {
                     const avsheshDhanrashi = parseFloat(
-                      formData.propertyRecordDetail.avshesh_dhanrashi || "0"
+                      formData.installmentPlan.avshesh_dhanrashi || "0"
                     );
                     const interestRate = parseFloat(
-                      formData.propertyRecordDetail.interest_rate || "0"
+                      formData.installmentPlan.interest_rate || "0"
                     );
                     const timePeriod = parseFloat(
-                      formData.propertyRecordDetail.time_period || "0"
+                      formData.installmentPlan.time_period || "0"
                     );
                     const idealNumberOfInstallments = parseInt(
-                      formData.propertyRecordDetail
-                        .ideal_number_of_installments || "1",
+                      formData.installmentPlan.ideal_number_of_installments ||
+                        "1",
                       10
                     );
+
                     const totalInterestAmount =
                       (avsheshDhanrashi * interestRate * timePeriod) / 100;
                     const adjustedInterest = totalInterestAmount / 2;
@@ -999,9 +898,9 @@ export default function CreateNewProperty() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             ब्याज राशि (छह महीने)
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {formatIndianNumber(adjustedInterest)}
+                            <span className="ml-2 text-lg font-semibold text-gray-900 dark:text-white">
+                              {formatIndianNumber(adjustedInterest)}
+                            </span>
                           </p>
                         </div>
                         <div>
@@ -1014,7 +913,7 @@ export default function CreateNewProperty() {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            तिमाही किस्त धनराशी
+                            तिमहि किस्त धनराशी
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatIndianNumber(idealInstallmentAmount)}
@@ -1038,7 +937,7 @@ export default function CreateNewProperty() {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            प्रति दिन विलंब धनराशि
+                            प्रति दिन विलंब धनराशी
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatIndianNumber(lateFeePerDay)}
@@ -1050,7 +949,7 @@ export default function CreateNewProperty() {
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatDateToDDMMYYYY(
-                              formData.propertyRecordDetail
+                              formData.installmentPlan
                                 .first_installment_due_date
                             )}
                           </p>
@@ -1062,7 +961,6 @@ export default function CreateNewProperty() {
               )}
             </div>
 
-            {/* Navigation Buttons */}
             <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div>
                 {currentStep > 0 && (
@@ -1103,7 +1001,7 @@ export default function CreateNewProperty() {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                         clipRule="evenodd"
                       />
                     </svg>
@@ -1149,7 +1047,7 @@ export default function CreateNewProperty() {
                         >
                           <path
                             fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414l4-4a1 1 0 011.414 0z"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                             clipRule="evenodd"
                           />
                         </svg>

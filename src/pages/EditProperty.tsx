@@ -5,6 +5,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import BASE_URL from "../data/endpoint";
 import ServiceChargeStep from "../components/propertyCreation/serviceChargeStep";
 import formSteps from "../data/formSteps";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Utility Functions
 const formatIndianNumber = (num: number): string => {
@@ -56,6 +57,7 @@ const calculateLateFee = (
 
 const formatDateToDDMMYYYY = (dateString: string): string | null => {
   if (!dateString) return null;
+  if (dateString.includes("-")) return dateString;
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -75,8 +77,12 @@ const validateMobileNumber = (value: string): boolean => {
 };
 
 // Main Component
-export default function CreateNewProperty() {
-  const [currentStep, setCurrentStep] = useState<number>(0);
+export default function EditProperty({}) {
+  const { property_id } = useParams(); // Get property_id from URL
+  const navigate = useNavigate();
+  const [propertyData, setPropertyData] = useState(null); // To store the fetched property data
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // We'll split the data so it matches the new structure
   const [formData, setFormData] = useState<any>({
@@ -85,6 +91,45 @@ export default function CreateNewProperty() {
     installments: [], // Payment installments
     serviceCharges: [], // Service charge data
   });
+
+  // Fetch property details on component mount
+  useEffect(() => {
+    const fetchPropertyDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${BASE_URL}/properties/${property_id}`, {
+          // headers: {
+          //   Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming token is stored in localStorage
+          // },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch property details");
+        }
+
+        const data = await response.json();
+        console.log(data);
+        const { propertyRecordDetail, installments, serviceCharges } = data;
+
+        setFormData({
+          propertyRecord: data.propertyRecords[data.propertyRecords.length - 1],
+          propertyRecordDetail,
+          installments,
+          serviceCharges,
+        });
+
+        setPropertyData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPropertyDetails();
+  }, [property_id]);
+
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const [currentPaymentEntry, setCurrentPaymentEntry] = useState<any>({
     installment_amount: "",
@@ -400,22 +445,30 @@ export default function CreateNewProperty() {
 
       // Build final shape
       const payload = {
-        propertyRecord: {
-          yojna_id: pr.yojna_id,
-          avanti_ka_naam: pr.avanti_ka_naam,
-          pita_pati_ka_naam: pr.pita_pati_ka_naam,
-          avanti_ka_sthayi_pata: pr.avanti_ka_sthayi_pata,
-          avanti_ka_vartaman_pata: pr.avanti_ka_vartaman_pata,
-          mobile_no: pr.mobile_no,
-          kabja_dinank: formatDateToDDMMYYYY(prd.kabja_dinank), // From "संपत्ति विवरण"
-          documentation_shulk: 0.0, // If you have a separate input for this, set it accordingly
-          aadhar_number: pr.aadhar_number,
-          // If you are uploading the Aadhaar photo to S3, you'd store the URL here. For now we just keep placeholder:
-          aadhar_photo_link:
-            pr.aadhar_photo_link || "https://example.com/aadhar.jpg",
-          documents_link: pr.documents_link || "https://example.com/doc.pdf",
-        },
+        propertyRecords: [
+          {
+            id: pr.id,
+            yojna_id: pr.yojna_id,
+            property_id: pr.property_id,
+            user_id: pr.user_id,
+
+            avanti_ka_naam: pr.avanti_ka_naam,
+            pita_pati_ka_naam: pr.pita_pati_ka_naam,
+            avanti_ka_sthayi_pata: pr.avanti_ka_sthayi_pata,
+            avanti_ka_vartaman_pata: pr.avanti_ka_vartaman_pata,
+            mobile_no: pr.mobile_no,
+            kabja_dinank: formatDateToDDMMYYYY(prd.kabja_dinank), // From "संपत्ति विवरण"
+            documentation_shulk: 0.0, // If you have a separate input for this, set it accordingly
+            aadhar_number: pr.aadhar_number,
+            // If you are uploading the Aadhaar photo to S3, you'd store the URL here. For now we just keep placeholder:
+            aadhar_photo_link:
+              pr.aadhar_photo_link || "https://example.com/aadhar.jpg",
+            documents_link: pr.documents_link || "https://example.com/doc.pdf",
+          },
+        ],
         propertyRecordDetail: {
+          id: prd.id,
+          property_id: prd.property_id,
           sampatti_sreni: prd.sampatti_sreni,
           avanti_sampatti_sankhya: prd.avanti_sampatti_sankhya,
           panjikaran_dhanrashi: parseFloat(prd.panjikaran_dhanrashi || "0"),
@@ -540,6 +593,9 @@ export default function CreateNewProperty() {
                 )
               : 0;
           return {
+            ...(payment.payment_id && { payment_id: payment.payment_id }),
+            property_id: pr.property_id,
+            property_record_id: prd.property_record_id,
             payment_number: payment.payment_number,
             payment_amount: payAmount,
             kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
@@ -553,6 +609,11 @@ export default function CreateNewProperty() {
           };
         }),
         serviceCharges: formData.serviceCharges.map((charge: any) => ({
+          ...(charge.service_charge_id && {
+            service_charge_id: charge.service_charge_id,
+          }),
+          property_id: pr.property_id,
+          property_record_id: prd.property_record_id,
           service_charge_financial_year: charge.service_charge_financial_year,
           service_charge_amount: parseFloat(
             charge.service_charge_amount || "0"
@@ -569,19 +630,25 @@ export default function CreateNewProperty() {
         })),
       };
 
+      console.log(payload);
+
       // Send POST request to new endpoint
-      const response = await fetch(`${BASE_URL}/properties`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization if needed:
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${BASE_URL}/properties/${prd.property_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization if needed:
+            // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.json();
       if (!response.ok) {
+        console.log(result);
         throw new Error(result.message || "Failed to create property");
       }
 
@@ -590,7 +657,8 @@ export default function CreateNewProperty() {
       const yojnaId = payload.propertyRecord.yojna_id;
       window.location.href = `/yojna/${yojnaId}`;
     } catch (error: any) {
-      console.error("Submission Error:", error);
+      console.log(error);
+
       alert(`प्रॉपर्टी सबमिट करने में त्रुटि: ${error.message}`);
     } finally {
       setIsSubmitting(false);
@@ -614,6 +682,42 @@ export default function CreateNewProperty() {
     5: "propertyRecordDetail",
     6: "serviceCharges",
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-pulse text-blue-600 font-semibold text-xl">
+            Loading...
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 shadow-md">
+            <p className="text-red-500 font-medium">Error: {error}</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!propertyData) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="bg-blue-200 border border-blue-200 rounded-lg p-6 shadow-md">
+            <p className="text-blue-600 font-medium">No data available</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
