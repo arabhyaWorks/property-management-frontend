@@ -3,7 +3,6 @@ import { IndianRupee, Building2, Wallet, CreditCard, ParkingCircle, CornerUpRigh
 import { useTranslation } from '../../hooks/useTranslation';
 import BASE_URL from '../../data/endpoint';
 
-
 export default function DashboardStats() {
   const { t } = useTranslation();
   const [statsData, setStatsData] = useState(null);
@@ -24,16 +23,16 @@ export default function DashboardStats() {
     }
   };
 
-  // Fetch stats from the API
+  // Fetch stats from the new API endpoint
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch(BASE_URL+'/api/stats');
+        const response = await fetch(`${BASE_URL}/api/financial`);
         if (!response.ok) {
-          throw new Error('Failed to fetch stats');
+          throw new Error('Failed to fetch financial stats');
         }
-        const data = await response.json();
-        setStatsData(data);
+        const result = await response.json();
+        setStatsData(result.data); // The API wraps the data in a "data" object
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -44,44 +43,56 @@ export default function DashboardStats() {
     fetchStats();
   }, []);
 
-  // Define the stats structure with API data
+  // Define the stats structure with the new API data
   const stats = statsData
     ? [
         {
           label: 'Total Registration Amount',
-          value: formatIndianNumber(statsData.total_registration_amount),
+          value: formatIndianNumber(statsData.total_panjikaran_dhanrashi),
           icon: IndianRupee,
           color: 'bg-blue-500',
         },
         {
-          label: 'Total Freehold Amount',
-          value: formatIndianNumber(statsData.total_freehold_amount),
-          icon: Building2,
+          label: 'Total Allocation Amount',
+          value: formatIndianNumber(statsData.total_avantan_dhanrashi),
+          icon: Wallet,
           color: 'bg-green-500',
         },
         {
-          label: 'Total Lease Rent',
-          value: formatIndianNumber(statsData.total_lease_rent),
-          icon: Wallet,
+          label: 'Total Sale Value',
+          value: formatIndianNumber(statsData.total_vikray_mulya),
+          icon: CreditCard,
           color: 'bg-yellow-500',
         },
         {
-          label: 'Total Service Charge',
-          value: formatIndianNumber(statsData.total_service_charge),
-          icon: CreditCard,
+          label: 'Total Freehold Amount',
+          value: formatIndianNumber(statsData.total_free_hold_dhanrashi),
+          icon: Building2,
           color: 'bg-purple-500',
+        },
+        {
+          label: 'Total Auction Value',
+          value: formatIndianNumber(statsData.total_auction_keemat),
+          icon: IndianRupee,
+          color: 'bg-indigo-500',
+        },
+        {
+          label: 'Total Lease Rent',
+          value: formatIndianNumber(statsData.total_lease_rent_dhanrashi),
+          icon: Wallet,
+          color: 'bg-teal-500',
         },
         {
           label: 'Total Park Charge',
           value: formatIndianNumber(statsData.total_park_charge),
           icon: ParkingCircle,
-          color: 'bg-indigo-500',
+          color: 'bg-orange-500',
         },
         {
           label: 'Total Corner Charge',
           value: formatIndianNumber(statsData.total_corner_charge),
           icon: CornerUpRight,
-          color: 'bg-teal-500',
+          color: 'bg-red-500',
         },
       ]
     : [];
@@ -131,47 +142,6 @@ export default function DashboardStats() {
           </div>
         </div>
       ))}
-      {/* Additional stats for total_properties and total_yojnas */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div className="p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-red-500 p-2 rounded-lg">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {statsData.total_properties}
-            </span>
-          </div>
-          <h3 className="text-base sm:text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Total Properties
-          </h3>
-        </div>
-        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-          <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-            {t('viewDetails')} →
-          </button>
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div className="p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-orange-500 p-2 rounded-lg">
-              <Wallet className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {statsData.total_yojnas}
-            </span>
-          </div>
-          <h3 className="text-base sm:text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Total Yojnas
-          </h3>
-        </div>
-        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-          <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-            {t('viewDetails')} →
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

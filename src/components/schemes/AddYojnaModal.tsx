@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import BASE_URL from '../../data/endpoint';
+import React, { useState } from "react";
+import { X, Plus, Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import BASE_URL from "../../data/endpoint";
 
 interface AddYojnaModalProps {
   onClose: () => void;
@@ -10,64 +10,72 @@ interface AddYojnaModalProps {
 
 export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
   const [formData, setFormData] = useState({
-    yojna_id: '',
-    yojna_name: '',
-    interest_rate: '',
+    yojna_id: "",
+    yojna_name: "",
+    interest_rate: "",
     time_period: 1,
     number_of_installments: 4,
-    sampatti_sreni_list: ['']
+    installment_frequency: "quarterly", // Added to match API
+    sampatti_sreni_list: [""],
   });
 
   const addPropertyCategory = () => {
     if (formData.sampatti_sreni_list.length < 10) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        sampatti_sreni_list: [...prev.sampatti_sreni_list, '']
+        sampatti_sreni_list: [...prev.sampatti_sreni_list, ""],
       }));
     } else {
-      toast.error('Maximum 10 property categories allowed');
+      toast.error("Maximum 10 property categories allowed");
     }
   };
 
   const removePropertyCategory = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      sampatti_sreni_list: prev.sampatti_sreni_list.filter((_, i) => i !== index)
+      sampatti_sreni_list: prev.sampatti_sreni_list.filter((_, i) => i !== index),
     }));
   };
 
   const updatePropertyCategory = (index: number, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      sampatti_sreni_list: prev.sampatti_sreni_list.map((item, i) => 
+      sampatti_sreni_list: prev.sampatti_sreni_list.map((item, i) =>
         i === index ? value : item
-      )
+      ),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const response = await fetch(`${BASE_URL}/api/yojnas`, {
-        method: 'POST',
+      const token = localStorage.getItem("authToken") || "<auth-token>"; // Replace with your token retrieval logic
+      const response = await fetch(`${BASE_URL}/api/yojna`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          interest_rate: parseFloat(formData.interest_rate), // Ensure numeric value
+          time_period: parseInt(formData.time_period), // Ensure integer
+          number_of_installments: parseInt(formData.number_of_installments), // Ensure integer
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create yojna');
+        throw new Error("Failed to create yojna");
       }
 
       const data = await response.json();
-      toast.success('Yojna created successfully');
+      toast.success(data.message || "Yojna created successfully");
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Error creating yojna:', error);
-      toast.error('Failed to create yojna');
+      console.error("Error creating yojna:", error);
+      toast.error("Failed to create yojna");
     }
   };
 
@@ -76,7 +84,10 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">नई योजना जोड़ें</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -90,7 +101,7 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
               <input
                 type="text"
                 value={formData.yojna_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, yojna_id: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, yojna_id: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 required
               />
@@ -103,7 +114,7 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
               <input
                 type="text"
                 value={formData.yojna_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, yojna_name: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, yojna_name: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 required
               />
@@ -156,7 +167,7 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
                 type="number"
                 step="0.01"
                 value={formData.interest_rate}
-                onChange={(e) => setFormData(prev => ({ ...prev, interest_rate: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, interest_rate: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 required
               />
@@ -169,7 +180,9 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
               <input
                 type="number"
                 value={formData.time_period}
-                onChange={(e) => setFormData(prev => ({ ...prev, time_period: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, time_period: parseInt(e.target.value) }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 required
               />
@@ -182,10 +195,33 @@ export function AddYojnaModal({ onClose, onSuccess }: AddYojnaModalProps) {
               <input
                 type="number"
                 value={formData.number_of_installments}
-                onChange={(e) => setFormData(prev => ({ ...prev, number_of_installments: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    number_of_installments: parseInt(e.target.value),
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Installment Frequency (किश्त की आवृत्ति)
+              </label>
+              <select
+                value={formData.installment_frequency}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, installment_frequency: e.target.value }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                required
+              >
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
 

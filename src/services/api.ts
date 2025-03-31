@@ -2,18 +2,18 @@ import axios from "axios";
 import BASE_URL from "../data/endpoint";
 const API_BASE_URL = BASE_URL+"/api";
 
-// Yojna APIs
-export async function getYojnas() {
+export const getYojnas = async () => {
+  const response = await fetch(`${BASE_URL}/api/yojna`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      // Add Authorization header if required: "Authorization": `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch yojnas");
+  return response.json();
 
-  try {
-    const response = await axios.get(`${API_BASE_URL}/yojnas`);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching yojnas:", error);
-    throw error;
-  }
-}
-
+};
 
 export async function updateYojna(yojnaId: string, yojnaData: any) {
   try {
@@ -25,22 +25,25 @@ export async function updateYojna(yojnaId: string, yojnaData: any) {
   }
 }
 
-// Property APIs
-export async function getProperties(params?: {
-  page?: number;
-  limit?: number;
-  id?: string;
-  avanti_ka_naam?: string;
-  yojna_id?: string;
-}) {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/properties`, { params });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching properties:", error);
-    throw error;
-  }
-}
+export const getProperties = async (params) => {
+  const query = new URLSearchParams(params).toString();
+  const request =  `${BASE_URL}/properties?${query}`
+  const response = await fetch(request, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      // Add Authorization header if required: "Authorization": `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    console.log(request)
+    console.log(response);
+
+    throw new Error("Failed to fetch properties")
+  };
+
+  return response.json();
+};
 
 export async function createProperty(propertyData: any) {
   try {

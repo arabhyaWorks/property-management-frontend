@@ -44,18 +44,21 @@ export function SchemesV1() {
   useEffect(() => {
     const fetchSchemes = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/yojnas`, {
+        const token = localStorage.getItem("authToken") || "<auth-token>"; // Replace with your token retrieval logic
+        const response = await fetch(`${BASE_URL}/api/yojna`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
         });
-        
+
         if (!response.ok) {
           throw new Error("Failed to fetch schemes");
         }
-        
+
         const result = await response.json();
+        // Assuming the API returns an array of yojna objects directly
         const mappedSchemes = result.data.map((item: any) => ({
           id: item.yojna_id,
           name: item.yojna_name,
@@ -63,16 +66,16 @@ export function SchemesV1() {
           timePeriod: item.time_period,
           installments: {
             count: item.number_of_installments,
-            frequency: item.installment_frequency
+            frequency: item.installment_frequency,
           },
           propertyTypes: item.sampatti_sreni_list,
-          totalPlots: item.property_count
+          totalPlots: item.property_count || 0, // Default to 0 if not provided
         }));
-        
+
         setSchemes(mappedSchemes);
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
         setLoading(false);
       }
     };
@@ -178,7 +181,7 @@ export function SchemesV1() {
                         Time Period
                       </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
-                        {scheme.timePeriod} Year{scheme.timePeriod > 1 ? 's' : ''}
+                        {scheme.timePeriod} Year{scheme.timePeriod > 1 ? "s" : ""}
                       </p>
                     </div>
                   </div>
@@ -221,20 +224,26 @@ export function SchemesV1() {
           onSuccess={() => {
             const fetchSchemes = async () => {
               try {
-                const response = await fetch(`${BASE_URL}/api/yojnas`);
+                const token = localStorage.getItem("authToken") || "<auth-token>";
+                const response = await fetch(`${BASE_URL}/api/yojna`, {
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                  },
+                });
                 if (!response.ok) throw new Error("Failed to fetch schemes");
                 const result = await response.json();
-                const mappedSchemes = result.data.map((item: any) => ({
+                const mappedSchemes = result.map((item: any) => ({
                   id: item.yojna_id,
                   name: item.yojna_name,
                   interestRate: item.interest_rate,
                   timePeriod: item.time_period,
                   installments: {
                     count: item.number_of_installments,
-                    frequency: item.installment_frequency
+                    frequency: item.installment_frequency,
                   },
                   propertyTypes: item.sampatti_sreni_list,
-                  totalPlots: item.property_count
+                  totalPlots: item.property_count || 0,
                 }));
                 setSchemes(mappedSchemes);
               } catch (err) {
