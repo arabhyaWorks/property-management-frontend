@@ -1,9 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, X } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Toaster } from "react-hot-toast";
 import BASE_URL from "../data/endpoint";
+
+interface TransferFormData {
+  yojna_id: string;
+  property_id: string;
+  transfer_type: "namantaran" | "varasat";
+  from_user_id: number;
+  relationship: string | null;
+  avanti_ka_naam: string;
+  pita_pati_ka_naam: string;
+  avanti_ka_sthayi_pata: string;
+  avanti_ka_vartaman_pata: string;
+  mobile_no: string;
+  kabja_dinank: string;
+  documentation_shulk: number;
+  aadhar_number: string;
+  aadhar_photo_link: string;
+  documents_link: string;
+  abhiyookti: string;
+}
 
 export function PropertyDetail() {
   const { property_id } = useParams(); // Get property_id from URL
@@ -11,6 +31,29 @@ export function PropertyDetail() {
   const [propertyData, setPropertyData] = useState(null); // To store the fetched property data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [transferType, setTransferType] = useState<"namantaran" | "varasat">(
+    "namantaran"
+  );
+  const [formData, setFormData] = useState<TransferFormData>({
+    // yojna_id: propertyData?.propertyRecords[0].yojna_id,
+    // property_id: property_id,
+    transfer_type: "namantaran",
+    from_user_id: 1, // You might want to get this from your auth context
+    relationship: null,
+    avanti_ka_naam: "",
+    pita_pati_ka_naam: "",
+    avanti_ka_sthayi_pata: "",
+    avanti_ka_vartaman_pata: "",
+    mobile_no: "",
+    kabja_dinank: new Date().toISOString().split("T")[0],
+    documentation_shulk: 0,
+    aadhar_number: "",
+    aadhar_photo_link: "",
+    documents_link: "",
+    abhiyookti: "",
+  });
 
   // Fetch property details on component mount
   useEffect(() => {
@@ -23,11 +66,13 @@ export function PropertyDetail() {
           },
         });
 
+
         if (!response.ok) {
           throw new Error("Failed to fetch property details");
         }
 
         const data = await response.json();
+        console.log(data);
         setPropertyData(data);
       } catch (err) {
         setError(err.message);
@@ -38,6 +83,38 @@ export function PropertyDetail() {
 
     fetchPropertyDetails();
   }, [property_id]);
+
+  const handleTransfer = async () => {
+    const payload = {
+      ...formData,
+      yojna_id: propertyData.propertyRecords[0].yojna_id,
+      property_id,
+    }
+    try {
+      const response = await fetch(`${BASE_URL}/properties/transfer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log(formData);
+
+      if (!response.ok) {
+        throw new Error("Transfer failed");
+      }
+
+      toast.success("Property transferred successfully");
+      setIsTransferModalOpen(false);
+      // Refresh the page or refetch property data
+      window.location.reload();
+    } catch (error) {
+      toast.error("Failed to transfer property");
+      console.error("Transfer error:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,7 +161,7 @@ export function PropertyDetail() {
 
   const handleEdit = () => {
     navigate(`/edit-property/${property_id}`);
-  }
+  };
 
   return (
     <DashboardLayout>
@@ -116,6 +193,14 @@ export function PropertyDetail() {
               aria-label="Edit property"
             >
               <Pencil />
+            </button>
+
+            <button
+              onClick={() => setIsTransferModalOpen(true)}
+              className="bg-white text-blue-600 hover:bg-blue-50 font-medium rounded-full p-2 ml-2 focus:outline-none focus:ring-2 focus:ring-white transition-colors"
+              aria-label="Transfer property"
+            >
+              <Plus />
             </button>
           </div>
         </div>
@@ -723,6 +808,280 @@ export function PropertyDetail() {
             </table>
           </div>
         </div>
+
+        {isTransferModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  संपत्ति स्थानांतरण
+                </h2>
+                <button
+                  onClick={() => setIsTransferModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex gap-4 mb-6">
+                  <button
+                    className={`flex-1 py-2 px-4 rounded-lg ${
+                      transferType === "namantaran"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                    onClick={() => {
+                      setTransferType("namantaran");
+                      setFormData((prev) => ({
+                        ...prev,
+                        transfer_type: "namantaran",
+                        relationship: null,
+                      }));
+                    }}
+                  >
+                    नामांतरण
+                  </button>
+                  <button
+                    className={`flex-1 py-2 px-4 rounded-lg ${
+                      transferType === "varasat"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                    onClick={() => {
+                      setTransferType("varasat");
+                      setFormData((prev) => ({
+                        ...prev,
+                        transfer_type: "varasat",
+                        relationship: "",
+                      }));
+                    }}
+                  >
+                    वरासत
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आवंटी का नाम
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.avanti_ka_naam}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          avanti_ka_naam: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      पिता/पति का नाम
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.pita_pati_ka_naam}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          pita_pati_ka_naam: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {transferType === "varasat" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        रिश्ता
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-lg"
+                        value={formData.relationship || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            relationship: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      स्थायी पता
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.avanti_ka_sthayi_pata}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          avanti_ka_sthayi_pata: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      वर्तमान पता
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.avanti_ka_vartaman_pata}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          avanti_ka_vartaman_pata: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      मोबाइल नंबर
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.mobile_no}
+                      onChange={(e) =>
+                        setFormData({ ...formData, mobile_no: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      कब्जा दिनांक
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.kabja_dinank}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          kabja_dinank: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      दस्तावेजीकरण शुल्क
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.documentation_shulk}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          documentation_shulk: parseFloat(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आधार नंबर
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.aadhar_number}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          aadhar_number: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आधार फोटो लिंक
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.aadhar_photo_link}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          aadhar_photo_link: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      दस्तावेज लिंक
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.documents_link}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          documents_link: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      अभियुक्ति
+                    </label>
+                    <textarea
+                      className="w-full p-2 border rounded-lg"
+                      rows={3}
+                      value={formData.abhiyookti}
+                      onChange={(e) =>
+                        setFormData({ ...formData, abhiyookti: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    onClick={() => setIsTransferModalOpen(false)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                  >
+                    रद्द करें
+                  </button>
+                  <button
+                    onClick={handleTransfer}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    स्थानांतरण करें
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
