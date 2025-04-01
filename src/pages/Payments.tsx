@@ -13,6 +13,7 @@ import {
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { useTranslation } from "../hooks/useTranslation";
+import BASE_URL from "../data/endpoint";
 
 interface Transaction {
   id: number;
@@ -86,11 +87,14 @@ export function Payments() {
   useEffect(() => {
     const fetchPaymentData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/payments/transactions/${order_id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("bida_token")}`,
-          },
-        });
+        const response = await fetch(
+          `${BASE_URL}/api/payments/transactions/${order_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("bida_token")}`,
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch payment data");
         }
@@ -159,78 +163,80 @@ export function Payments() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    {/* Header */}
-    <div className="flex items-center mb-6">
-      <button
-        onClick={() => navigate("/property/home")}
-        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full mr-3"
-      >
-        {/* <ArrowLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" /> */}
-      </button>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Payment Detail - {transaction.orderId}
-      </h1>
-    </div>
-
-    {/* Transaction Overview */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <Wallet className="w-8 h-8 text-blue-500" />
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Transaction Details
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Property ID: {transaction.property_id}
-            </p>
-          </div>
-        </div>
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
-            transaction.status === "paid"
-              ? "bg-green-100 text-green-800"
-              : transaction.status === "pending"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-red-100 text-red-800"
-          }`}
+      {/* Header */}
+      <div className="flex items-center mb-6">
+        <button
+          onClick={() => navigate("/property/home")}
+          className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full mr-3"
         >
-          {transaction.status || "Unknown"}
-        </span>
+          {/* <ArrowLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" /> */}
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Payment Detail - {transaction.orderId}
+        </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="flex items-center space-x-2">
-          <IndianRupee className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Amount</p>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
-              ₹{parseFloat(transaction.amount).toLocaleString("en-IN")}
-            </p>
+      {/* Transaction Overview */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <Wallet className="w-8 h-8 text-blue-500" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Transaction Details
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Property ID: {transaction.property_id}
+              </p>
+            </div>
           </div>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium ${
+              transaction.status === "paid"
+                ? "bg-green-100 text-green-800"
+                : transaction.status === "pending"
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {transaction.status || "Unknown"}
+          </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Clock className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Date</p>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {new Date(transaction.created_at).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <FileCheck className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Transaction ID</p>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {transaction.transactionid}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Pie Chart */}
-      {/* <div className="mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-2">
+            <IndianRupee className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Amount</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                ₹{parseFloat(transaction.amount).toLocaleString("en-IN")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Clock className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Date</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {new Date(transaction.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FileCheck className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Transaction ID
+              </p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {transaction.transactionid}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Pie Chart */}
+        {/* <div className="mt-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Payment Breakdown
         </h3>
@@ -266,54 +272,69 @@ export function Payments() {
           </div>
         </div>
       </div> */}
-    </div>
+      </div>
 
-    {/* Payment Details */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-        {isInstallment ? "Installment Payments" : "Service Charge Payments"}
-      </h2>
-      <div className="space-y-4">
-        {payments.map((payment) => (
-          <div
-            key={isInstallment ? (payment as InstallmentPayment).payment_id : (payment as ServiceChargePayment).service_charge_id}
-            className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex justify-between items-center"
-          >
-            <div className="space-y-1">
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {isInstallment
-                  ? `Installment #${(payment as InstallmentPayment).payment_number}`
-                  : (payment as ServiceChargePayment).service_charge_financial_year}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                {isInstallment
-                  ? `Due: ${(payment as InstallmentPayment).payment_due_date}`
-                  : `Paid on: ${(payment as ServiceChargePayment).service_charge_payment_date}`}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                ₹{parseFloat(
-                  isInstallment
-                    ? (payment as InstallmentPayment).total_payment_amount_with_late_fee
-                    : (payment as ServiceChargePayment).service_charge_amount
-                ).toLocaleString("en-IN")}
-              </p>
-              {isInstallment && (payment as InstallmentPayment).late_fee_amount !== "0.00" && (
-                <p className="text-sm text-red-500 dark:text-red-400">
-                  Late Fee: ₹{(payment as InstallmentPayment).late_fee_amount}
+      {/* Payment Details */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {isInstallment ? "Installment Payments" : "Service Charge Payments"}
+        </h2>
+        <div className="space-y-4">
+          {payments.map((payment) => (
+            <div
+              key={
+                isInstallment
+                  ? (payment as InstallmentPayment).payment_id
+                  : (payment as ServiceChargePayment).service_charge_id
+              }
+              className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex justify-between items-center"
+            >
+              <div className="space-y-1">
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {isInstallment
+                    ? `Installment #${
+                        (payment as InstallmentPayment).payment_number
+                      }`
+                    : (payment as ServiceChargePayment)
+                        .service_charge_financial_year}
                 </p>
-              )}
-              {isInstallment && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Paid on: {(payment as InstallmentPayment).payment_date}
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {isInstallment
+                    ? `Due: ${(payment as InstallmentPayment).payment_due_date}`
+                    : `Paid on: ${
+                        (payment as ServiceChargePayment)
+                          .service_charge_payment_date
+                      }`}
                 </p>
-              )}
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                  ₹
+                  {parseFloat(
+                    isInstallment
+                      ? (payment as InstallmentPayment)
+                          .total_payment_amount_with_late_fee
+                      : (payment as ServiceChargePayment).service_charge_amount
+                  ).toLocaleString("en-IN")}
+                </p>
+                {isInstallment &&
+                  (payment as InstallmentPayment).late_fee_amount !==
+                    "0.00" && (
+                    <p className="text-sm text-red-500 dark:text-red-400">
+                      Late Fee: ₹
+                      {(payment as InstallmentPayment).late_fee_amount}
+                    </p>
+                  )}
+                {isInstallment && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Paid on: {(payment as InstallmentPayment).payment_date}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
-  </div>
   );
 }
