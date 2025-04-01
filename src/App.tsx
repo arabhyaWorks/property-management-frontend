@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
+import { Payments } from "./pages/Payments";
 import { SchemesV1 } from "./pages/schemes/SchemesV1";
 import { Property } from "./pages/Property";
 import { PaymentDetails } from "./pages/PaymentDetails";
@@ -34,16 +35,24 @@ export default function App() {
 
               {/* Protected Routes */}
               {/* <Route element={<PrivateRoute />}> */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/schemes-1" element={<SchemesV1 />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/schemes-1" element={<SchemesV1 />} />
 
-                <Route path="/yojna/:yojnaId" element={<Property />} />
-                <Route path="/property/:property_id" element={<PropertyDetail />} />
-                <Route path="/edit-property/:property_id" element={<EditProperty />} />
-                <Route path="/AddProperty" element={<CreateNewProperty />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/payment-details" element={<PaymentDetails />} />
-                <Route path="/settings" element={<Settings />} />
+              <Route path="/yojna/:yojnaId" element={<Property />} />
+              <Route
+                path="/property/:property_id"
+                element={<PropertyDetail />}
+              />
+              <Route path="/payment/:order_id" element={<Payments />} />
+              <Route
+                path="/edit-property/:property_id"
+                element={<EditProperty />}
+              />
+              <Route path="/AddProperty" element={<CreateNewProperty />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/payment-details" element={<PaymentDetails />} />
+              <Route path="/settings" element={<Settings />} />
+
               {/* </Route> */}
             </Routes>
           </BrowserRouter>
@@ -52,8 +61,6 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
-
 
 // export default function App() {
 //   return (
