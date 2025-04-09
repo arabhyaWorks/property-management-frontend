@@ -332,7 +332,7 @@ export default function EditPropertyForm({ property, onClose }: EditPropertyForm
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">विक्रय मूल्य</label>
+                <label className="block text-sm font-medium mb-1">विक्रय धनराशि</label>
                 <input
                   type="number"
                   name="salePrice"

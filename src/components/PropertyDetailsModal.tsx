@@ -197,7 +197,7 @@ export function PropertyDetailsModal({
             <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <DetailItem
-                label="विक्रय मूल्य"
+                label="विक्रय धनराशि"
                 value={`₹${property.sale_price || 0}`}
               />
               <DetailItem
@@ -217,7 +217,7 @@ export function PropertyDetailsModal({
                 value={`₹${property.corner_charge || 0}`}
               />
               <DetailItem
-                label="अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि"
+                label="अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि"
                 value={`₹${property.remaining_sale_price_lump_sum || 0}`}
               />
               <DetailItem

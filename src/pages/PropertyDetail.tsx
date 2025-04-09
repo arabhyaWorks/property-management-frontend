@@ -361,7 +361,7 @@ export function PropertyDetail() {
                 </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">आवंटन धनराशि:</span>{" "}
-                  {propertyData.propertyRecordDetail.avantan_dinank ||
+                  {propertyData.propertyRecordDetail.avantan_dhanrashi ||
                     "उपलब्ध नहीं"}
                 </p>
                 <p className="flex">
@@ -370,7 +370,7 @@ export function PropertyDetail() {
                     "उपलब्ध नहीं"}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">विक्रय मूल्य:</span>{" "}
+                  <span className="font-semibold min-w-40">विक्रय धनराशि:</span>{" "}
                   {propertyData.propertyRecordDetail.vikray_mulya}
                 </p>
                 <p className="flex">
@@ -383,12 +383,12 @@ export function PropertyDetail() {
               </div>
               <div className="flex flex-col space-y-2">
                 <p className="flex">
-                  <span className="font-semibold min-w-40">नीलामी कीमत:</span>{" "}
+                  <span className="font-semibold min-w-40">नीलामी धनराशि:</span>{" "}
                   {propertyData.propertyRecordDetail.auction_keemat}
                 </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">
-                    अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि:
+                    अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि:
                   </span>{" "}
                   {
                     propertyData.propertyRecordDetail
@@ -397,7 +397,7 @@ export function PropertyDetail() {
                 </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">
-                    अवशेष विक्रय मूल्य एकमुश्त जमा दिनांक:
+                    अवशेष विक्रय धनराशि एकमुश्त जमा दिनांक:
                   </span>{" "}
                   {
                     propertyData.propertyRecordDetail
@@ -417,12 +417,12 @@ export function PropertyDetail() {
                   {propertyData.propertyRecordDetail.lease_rent_dhanrashi}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">पार्क शुल्क:</span>{" "}
+                  <span className="font-semibold min-w-40">पार्क चार्ज:</span>{" "}
                   {propertyData.propertyRecordDetail.park_charge ||
                     "उपलब्ध नहीं"}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">कोने का शुल्क:</span>{" "}
+                  <span className="font-semibold min-w-40">कार्नर चार्ज:</span>{" "}
                   {propertyData.propertyRecordDetail.corner_charge ||
                     "उपलब्ध नहीं"}
                 </p>
@@ -443,7 +443,7 @@ export function PropertyDetail() {
               <div className="flex flex-col space-y-2">
                 <p className="flex">
                   <span className="font-semibold min-w-40">
-                    पुनर्जनन शुल्क:
+                    पुनर्जीवित शुल्क:
                   </span>{" "}
                   {propertyData.propertyRecordDetail.punarjivit_shulk}
                 </p>

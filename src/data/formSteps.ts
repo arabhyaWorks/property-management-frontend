@@ -128,9 +128,9 @@ const formSteps: FormStep[] = [
         required: true,
       },
       { id: "auction_keemat", label: "नीलामी शुल्क", type: "number" },
-      { id: "avshesh_vikray_mulya_ekmusht_jama_dhanrashi", label: "अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि", type: "number" },
+      { id: "avshesh_vikray_mulya_ekmusht_jama_dhanrashi", label: "अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि", type: "number" },
       { id: "ekmusht_jama_dhanrashi", label: "एकमुश्त जमा धनराशि पर छूट", type: "number" },
-      { id: "avshesh_vikray_mulya_ekmusht_jama_dinank", label: "अवशेष विक्रय मूल्य एकमुश्त जमा दिनांक", type: "date" },
+      { id: "avshesh_vikray_mulya_ekmusht_jama_dinank", label: "अवशेष विक्रय धनराशि एकमुश्त जमा दिनांक", type: "date" },
       { id: "lease_rent_dhanrashi", label: "लीज रेंट धनराशि", type: "number" },
       { id: "free_hold_dhanrashi", label: "फ्री होल्ड धनराशि", type: "number" },
     ],
@@ -189,7 +189,7 @@ const formSteps: FormStep[] = [
   {
     title: "अतिरिक्त शुल्क और विवरण",
     fields: [
-      { id: "park_charge", label: "पार्क शुल्क", type: "number" },
+      { id: "park_charge", label: "पार्क चार्ज", type: "number" },
       { id: "corner_charge", label: "कॉर्नर शुल्क", type: "number" },
       {
         id: "atirikt_bhoomi_ki_dhanrashi",

@@ -55,7 +55,7 @@ const formSteps: FormStep[] = [
       { id: 'registrationDate', label: 'पंजीकरण दिनांक', type: 'date' },
       { id: 'allotmentAmount', label: 'आवंटन धनराशि', type: 'number' },
       { id: 'allotmentDate', label: 'आवंटन दिनांक', type: 'date' },
-      { id: 'salePrice', label: 'विक्रय मूल्य', type: 'number' },
+      { id: 'salePrice', label: 'विक्रय धनराशि', type: 'number' },
       { id: 'eAuctionPrice', label: 'ई-आक्शन कीमत', type: 'number' },
       { id: 'freeholdAmount', label: 'फ्री होल्ड धनराशि', type: 'number' },
       { id: 'parkCharge', label: 'पार्क चार्ज', type: 'number' },
@@ -66,7 +66,7 @@ const formSteps: FormStep[] = [
     title: 'Charges & Payments',
     fields: [
       { id: 'leaseRentAmount', label: 'लीज रेंट की धनराशि', type: 'number' },
-      { id: 'remainingSalePriceLumpSum', label: 'अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि', type: 'number' },
+      { id: 'remainingSalePriceLumpSum', label: 'अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि', type: 'number' },
       { id: 'remainingSalePriceInstallment', label: 'अवशेष विक्रय मूल किस्त धनराशि', type: 'number' },
       { id: 'interestAmount', label: 'ब्याज धनराशि', type: 'number' },
       { id: 'remainingInstallmentDate', label: 'दिनांक', type: 'date' },
