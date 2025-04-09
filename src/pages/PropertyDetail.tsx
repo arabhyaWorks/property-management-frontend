@@ -365,7 +365,7 @@ export function PropertyDetail() {
                     "उपलब्ध नहीं"}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">आवंटन तिथि:</span>{" "}
+                  <span className="font-semibold min-w-40">आवंटन दिनांक:</span>{" "}
                   {propertyData.propertyRecordDetail.avantan_dinank ||
                     "उपलब्ध नहीं"}
                 </p>
@@ -388,7 +388,7 @@ export function PropertyDetail() {
                 </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">
-                    अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि:
+                    अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि:
                   </span>{" "}
                   {
                     propertyData.propertyRecordDetail
@@ -397,7 +397,7 @@ export function PropertyDetail() {
                 </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">
-                    अवशेष विक्रय धनराशि एकमुश्त जमा दिनांक:
+                    अवशेष विक्रय मूल्य एकमुश्त जमा दिनांक:
                   </span>{" "}
                   {
                     propertyData.propertyRecordDetail

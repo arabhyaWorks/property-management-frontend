@@ -217,7 +217,7 @@ export function NewPropertyDetailsModal({
                 value={`₹${property.corner_charge || 0}`}
               />
               <DetailItem
-                label="अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि"
+                label="अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि"
                 value={`₹${property.remaining_sale_price_lump_sum || 0}`}
               />
               <DetailItem

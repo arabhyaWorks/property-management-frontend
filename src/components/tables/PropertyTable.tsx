@@ -9,10 +9,12 @@ import {
   Columns,
   X,
   Eye,
+  Download,
 } from "lucide-react";
 import { getProperties, getYojnas } from "../../services/api";
 import { dataLabels, dataKeys, formattedFields } from "../../data/dataLables";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 interface Yojna {
   yojna_id: string;
@@ -38,7 +40,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
   const [selectedSampattiSreni, setSelectedSampattiSreni] =
     useState<string>("");
 
-  // Define search fields, excluding yojna_id and sampatti_sreni (handled by filters)
   const searchFields = [
     { value: "property_id", label: "Property ID" },
     { value: "mobile_no", label: "Mobile Number" },
@@ -46,6 +47,68 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     { value: "avanti_sampatti_sankhya", label: "Property Number" },
     { value: "property_floor_type", label: "Floor Type" },
   ];
+
+  const exportToExcel = async () => {
+    try {
+      setLoading(true);
+      const params: any = {
+        transfer_type: "none",
+        page: 1,
+        limit: 1000, // Set limit to 1000 for export
+      };
+
+      if (searchQuery) {
+        params[searchField] = searchQuery;
+      }
+
+      if (selectedYojna) {
+        params.yojna_id = selectedYojna;
+      }
+
+      if (selectedSampattiSreni) {
+        params.sampatti_sreni = selectedSampattiSreni;
+      }
+
+      const response = await getProperties(params);
+      const exportData = response.data.map((item: any) => {
+        const row: any = {};
+        visibleColumns.forEach((field) => {
+          const label =
+            dataLabels.getResponse.find((l) => l.key === field)?.label || field;
+          row[label] = formattedFields.includes(field)
+            ? formatValue(item[field])
+            : item[field];
+        });
+        return row;
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Properties");
+
+      // Auto-size columns
+      const colWidths = visibleColumns.map((field) => {
+        const label =
+          dataLabels.getResponse.find((l) => l.key === field)?.label || field;
+        const maxLength = Math.max(
+          label.length,
+          ...exportData.map((row) => String(row[label] || "").length)
+        );
+        return { wch: Math.min(maxLength + 2, 50) }; // Add padding, max width 50
+      });
+      worksheet["!cols"] = colWidths;
+
+      XLSX.writeFile(
+        workbook,
+        `properties_export_${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setError("Error exporting data");
+      setLoading(false);
+    }
+  };
 
   const toggleColumn = (key: string) => {
     setVisibleColumns((current) => {
@@ -67,20 +130,12 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
 
   useEffect(() => {
     fetchData();
-  }, [
-    currentPage,
-    searchQuery,
-    searchField,
-    selectedYojna,
-    selectedSampattiSreni,
-    yojna_id,
-  ]);
+  }, [currentPage, selectedYojna, selectedSampattiSreni, yojna_id]);
 
   const fetchYojnas = async () => {
     try {
       const response = await getYojnas();
       console.log(response);
-
       setYojnas(response.data);
     } catch (err) {
       console.error("Error fetching yojnas:", err);
@@ -91,7 +146,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     try {
       setLoading(true);
       const params: any = {
-        transfer_type: "none", // Always set transfer_type to 'none'
+        transfer_type: "none",
         page: currentPage,
         limit: 10,
       };
@@ -120,8 +175,14 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     }
   };
 
+  const handleSearch = () => {
+    setCurrentPage(1); // Reset to first page on new search
+    fetchData();
+  };
+
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) return "-";
+    if (typeof value === "string" && value.trim() === "") return "-";
     if (typeof value === "boolean") return value ? "Yes" : "No";
     if (
       value instanceof Date ||
@@ -175,7 +236,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto p-3">
           <div className="space-y-6 sm:space-y-0 sm:flex sm:items-start sm:gap-6">
             <div className="flex w-full gap-2">
               <div className="flex items-center gap-3">
@@ -230,8 +291,8 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                 )}
               </div>
 
-              <div className="w-full">
-                <div className="relative">
+              <div className="w-full flex gap-2">
+                <div className="relative flex-1">
                   <input
                     type="text"
                     value={searchQuery}
@@ -239,10 +300,18 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                     placeholder={`Search by ${
                       searchFields.find((f) => f.value === searchField)?.label
                     }...`}
-                    className="pl-11 w-full pr-4 py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg"
+                    className=" p-4 w-full py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg"
+                    // className="pl-11 pr-4 "
                   />
-                  <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" />
+                  {/* <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" /> */}
                 </div>
+                <button
+                  onClick={handleSearch}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  <Search className="h-5 w-5" />
+                  {/* Search */}
+                </button>
               </div>
 
               <select
@@ -292,6 +361,14 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                   <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 </div>
               )}
+
+              <button
+                onClick={exportToExcel}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700"
+              >
+                <Download className="h-5 w-5" />
+                <span>Export</span>
+              </button>
             </div>
           </div>
         </div>

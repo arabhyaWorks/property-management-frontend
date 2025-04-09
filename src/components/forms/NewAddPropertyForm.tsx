@@ -66,7 +66,7 @@ const formSteps: FormStep[] = [
     title: 'Charges & Payments',
     fields: [
       { id: 'leaseRentAmount', label: 'लीज रेंट की धनराशि', type: 'number' },
-      { id: 'remainingSalePriceLumpSum', label: 'अवशेष विक्रय धनराशि एकमुश्त जमा धनराशि', type: 'number' },
+      { id: 'remainingSalePriceLumpSum', label: 'अवशेष विक्रय मूल्य एकमुश्त जमा धनराशि', type: 'number' },
       { id: 'remainingSalePriceInstallment', label: 'अवशेष विक्रय मूल किस्त धनराशि', type: 'number' },
       { id: 'interestAmount', label: 'ब्याज धनराशि', type: 'number' },
       { id: 'remainingInstallmentDate', label: 'दिनांक', type: 'date' },
