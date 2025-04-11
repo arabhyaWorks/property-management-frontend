@@ -7,9 +7,16 @@
   --text: 17 24 39;
 }
 
+.light {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  /* Other light mode styles */
+}
+
 .dark {
-  --background: 17 24 39;
-  --text: 255 255 255;
+  --background-color: #1e1e2d;
+  --text-color: #ffffff;
+  /* Other dark mode styles */
 }
 
 body {
