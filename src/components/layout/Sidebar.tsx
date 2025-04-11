@@ -19,14 +19,17 @@ import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { PaymentCounter } from '../payments/PaymentCounter.tsx';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showPaymentCounter, setShowPaymentCounter] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 

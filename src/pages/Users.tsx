@@ -2,26 +2,80 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Plus, Search, Mail, Phone } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { useEffect } from 'react';
+import BASE_URL from '../data/endpoint';
+import { toast } from 'react-hot-toast';
+import { CreateUserModal } from '../components/users/CreateUserModal';
 
-// Dummy data for demonstration
-const users = [
-  { id: 1, name: 'Rajesh Kumar', email: 'rajesh.kumar@bida.gov.in', phone: '+91 9876543210' },
-  { id: 2, name: 'Priya Singh', email: 'priya.singh@bida.gov.in', phone: '+91 9876543211' },
-  { id: 3, name: 'Amit Patel', email: 'amit.patel@bida.gov.in', phone: '+91 9876543212' },
-  { id: 4, name: 'Sneha Gupta', email: 'sneha.gupta@bida.gov.in', phone: '+91 9876543213' },
-  { id: 5, name: 'Vikram Shah', email: 'vikram.shah@bida.gov.in', phone: '+91 9876543214' },
-];
+interface User {
+  id: number;
+  name: string;
+  mobile_number: string;
+  email: string;
+  role: string;
+}
 
 export function Users() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${BASE_URL}/api/users?role_type=non-allottee`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const data = await response.json();
+        setUsers(data.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch users');
+        setLoading(false);
+        toast.error('Failed to fetch users');
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(user =>
     Object.values(user).some(value =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="p-8 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-8 text-center text-red-600">
+          {error}
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -40,6 +94,36 @@ export function Users() {
             Create User
           </button>
         </div>
+
+        {showCreateModal && (
+          <CreateUserModal
+            onClose={() => setShowCreateModal(false)}
+            onSuccess={() => {
+              // Refresh the users list after successful creation
+              const fetchUsers = async () => {
+                try {
+                  const token = localStorage.getItem('token');
+                  const response = await fetch(`${BASE_URL}/api/users?role_type=non-allottee`, {
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                    }
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                  }
+
+                  const data = await response.json();
+                  setUsers(data.data);
+                } catch (err) {
+                  console.error('Error fetching users:', err);
+                  toast.error('Failed to refresh users list');
+                }
+              };
+              fetchUsers();
+            }}
+          />
+        )}
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -101,13 +185,13 @@ export function Users() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                         <Mail className="h-4 w-4 mr-2" />
-                        {user.email}
+                        {user.email || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                         <Phone className="h-4 w-4 mr-2" />
-                        {user.phone}
+                        {user.mobile_number}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">

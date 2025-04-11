@@ -1,17 +1,18 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import BASE_URL from '../data/endpoint';
 
 interface User {
   id: string;
-  email: string; 
-  full_name: string; 
-  phone: string; 
-  department: string;
+  mobile_number: string;
+  email?: string;
+  name: string;
+  role: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (mobile_number: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -20,33 +21,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse stored user data:', error);
+        localStorage.removeItem('user'); // Clear invalid data
+      }
     }
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (mobile_number: string, password: string) => {
     try {
-      console.log(email,password);
-      
-      const response = await axios.post('https://property-mngnt-backend-seven.vercel.app/login', { 
-        email, 
-        password 
+      const response = await axios.post(`${BASE_URL}/api/users/login/password`, {
+        mobile_number,
+        password
       });
-      console.log(response);
       
-      const { token, user } = response.data; // Assuming backend sends { token, user }
-
-      // Store user data and token
+      const { token, user } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-
       setUser(user);
     } catch (error) {
-      console.error('authContext Login failed:', error);
+      console.error('Login failed:', error);
       throw new Error('Invalid credentials');
     }
   };
@@ -71,6 +70,5 @@ function useAuth() {
   }
   return context;
 }
-
 
 export { AuthProvider, useAuth };

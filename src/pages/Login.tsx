@@ -1,31 +1,37 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, User, Lock } from 'lucide-react';
+import { Building2, Phone, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-
+import { toast } from 'react-hot-toast';
 
 export function Login() {
-  // const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // New state for error message
   const navigate = useNavigate();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage(''); // Clear previous error message on new submission
+
     try {
-      console.log(email, password);
-      await login(email, password); 
+      await login(mobileNumber, password);
       navigate('/dashboard');
     } catch (error) {
-      console.error('loginPage Login failed:', error);
-      alert('loginPage Invalid credentials or server error');
+      const errorMsg = 'Invalid credentials. Please check your mobile number and password.';
+      setErrorMessage(errorMsg); // Set error message to display in UI
+      toast.error(errorMsg); // Still show toast for additional feedback
+      console.error('Login failed:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Section - Login Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 bg-white">
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-8">
@@ -40,24 +46,23 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+              <label htmlFor="mobile_number" className="block text-sm font-medium text-gray-700 mb-1">
+                Mobile Number
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
+                  <Phone className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  id="mobile_number"
+                  name="mobile_number"
+                  type="tel"
+                  pattern="[0-9]{10}"
                   required
-                  value={email}
-                  onChange={(e) => {setEmail(e.target.value) 
-                    console.log(e.target.value);
-                  }}
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
                   className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your email"
+                  placeholder="Enter your mobile number"
                 />
               </div>
             </div>
@@ -76,15 +81,19 @@ export function Login() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => {setPassword(e.target.value)
-                    console.log(e.target.value);
-                    
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your password"
                 />
               </div>
             </div>
+
+            {/* Display error message if it exists */}
+            {errorMessage && (
+              <div className="text-red-600 text-sm text-center">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -107,15 +116,15 @@ export function Login() {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1e3a8a] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              disabled={isLoading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1e3a8a] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>
       </div>
 
-      {/* Right Section - Decorative */}
       <div className="hidden lg:block lg:w-1/2 bg-[#1e1e2d] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#ffa500] rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl opacity-50"></div>
