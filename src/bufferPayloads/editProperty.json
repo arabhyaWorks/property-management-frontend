@@ -1,0 +1,208 @@
+{
+    "propertyRecords": [
+        {
+            "id": 906,
+            "yojna_id": "BID",
+            "yojna_name": "बीडा मार्ट",
+            "property_id": "BID-20250419142210",
+            "transfer_type": "none",
+            "from_user_id": null,
+            "user_id": 1,
+            "previous_record_id": null,
+            "next_record_id": null,
+            "transfer_date": null,
+            "relationship": null,
+            "avanti_ka_naam": "Arabhaya test 3",
+            "pita_pati_ka_naam": "Arabhaya test 3",
+            "avanti_ka_sthayi_pata": "Arabhaya test 3",
+            "avanti_ka_vartaman_pata": "Arabhaya test 3",
+            "mobile_no": "9453269956", 
+            "kabja_dinank": "01-01-2020",
+            "documentation_shulk": "0.00",
+            "aadhar_number": "945326995612",
+            "aadhar_photo_link": "https://example.com/aadhar.jpg",
+            "documents_link": "https://example.com/doc.pdf"
+        }
+    ],
+    "propertyRecordDetail": {
+        "id": 903, 
+        "property_id": "BID-20250419142210", 
+        "sampatti_sreni": "एल.आई.जी.", // non editable 
+        "avanti_sampatti_sankhya": "12", // non editable 
+        "panjikaran_dhanrashi": "1700000.00", // non editable 
+        "panjikaran_dinank": "01-01-2020", // non editable 
+        "avantan_dhanrashi": "1700000.00", // non editable 
+        "avantan_dinank": "01-01-2020", // non editable 
+        "vikray_mulya": "8292949.00", // non editable 
+        "free_hold_dhanrashi": null,
+        "auction_keemat": "8322949.00", // non editable 
+        "lease_rent_dhanrashi": null,
+        "park_charge": null,
+        "corner_charge": null,
+        "avshesh_vikray_mulya_ekmusht_jama_dhanrashi": "0.00", // non editable 
+        "avshesh_vikray_mulya_ekmusht_jama_dinank": null, // non editable 
+        "ekmusht_jama_dhanrashi": "0.00", // non editable 
+        "byaj_dhanrashi": "0.00",
+        "dinank": null,
+        "kshetrafal": "20.00", // non editable 
+        "atirikt_bhoomi_ki_dhanrashi": "0.00",
+        "punarjivit_shulk": "0.00",
+        "praman_patra_shulk": "0.00",
+        "vigyapan_shulk": "0.00",
+        "nibandhan_shulk": "0.00",
+        "nibandhan_dinank": null,
+        "patta_bhilekh_dinank": null,
+        "bhavan_manchitra_swikrit_manchitra": null,
+        "bhavan_nirman": "Yes",
+        "jama_dhan_rashi_dinank": null,
+        "jama_dhan_rashid_sankhya": null,
+        "sewer_connection_water_connection_charge": "0.00",
+        "labansh": "",
+        "anya": "",
+
+        "property_floor_type": "LGF", // non editable 
+        "avshesh_dhanrashi": "4922949.00", // non editable 
+        "interest_rate": "12.00", // non editable 
+        "time_period": 1, // non editable 
+        "total_interest_amount": "590753.88", // non editable 
+        "total_interest_amount_div_2": "295376.94", // non editable 
+        "kul_yog": "5218325.94", // non editable 
+        "ideal_number_of_installments": 4, // non editable 
+        "ideal_installment_amount_per_installment": "1304581.49", // non editable 
+        "ideal_kisht_mool": "1230737.25", // non editable 
+        "ideal_kisht_byaj": "73844.24", // non editable 
+        "late_fee_per_day": "643.36", // non editable 
+        "first_installment_due_date": "01-02-2020" // non editable 
+    },
+    "installments": [
+        {
+            // in the database
+            "payment_id": "PAY-20250419142210-000",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "payment_number": 1,
+            "payment_amount": "1304581.49",
+            "kisht_mool_paid": "1230737.25",
+            "kisht_byaj_paid": "73844.24",
+            "payment_due_date": "01-02-2020",
+            "payment_date": "02-02-2020",
+            "number_of_days_delayed": 1,
+            "late_fee_amount": "643.36",
+            "total_payment_amount_with_late_fee": "1305224.85"
+        },
+        {
+            // in the database
+            "payment_id": "PAY-20250419142210-001",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "payment_number": 2,
+            "payment_amount": "1304581.49",
+            "kisht_mool_paid": "1230737.25",
+            "kisht_byaj_paid": "73844.24",
+            "payment_due_date": "01-05-2020",
+            "payment_date": "01-05-2020",
+            "number_of_days_delayed": 0,
+            "late_fee_amount": "0.00",
+            "total_payment_amount_with_late_fee": "1304581.49"
+        },
+        {
+            // in the database
+            "payment_id": "PAY-20250419142210-002",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "payment_number": 3,
+            "payment_amount": "1304581.49",
+            "kisht_mool_paid": "1230737.25",
+            "kisht_byaj_paid": "73844.24",
+            "payment_due_date": "01-08-2020",
+            "payment_date": "01-08-2020",
+            "number_of_days_delayed": 0,
+            "late_fee_amount": "0.00",
+            "total_payment_amount_with_late_fee": "1304581.49"
+        },
+        {
+// not is the database new installment, getting inserted while editing, inserting new installment
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "payment_number": 4,
+            "user_id": 1,
+            "payment_amount": "1304581.49",
+            "kisht_mool_paid": "1230737.25",
+            "kisht_byaj_paid": "73844.24",
+            "payment_due_date": "01-11-2020",
+            "payment_date": "01-11-2020",
+            "number_of_days_delayed": 0,
+            "late_fee_amount": "0.00",
+            "total_payment_amount_with_late_fee": "1304581.49"
+        }
+    ],
+    "serviceCharges": [
+        {
+             // in the database
+            "service_charge_id": "SVC-20250419142210-000",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "service_charge_financial_year": "2020-2021",
+            "service_charge_amount": "10610.00",
+            "service_charge_late_fee": "530.50",
+            "service_charge_payment_date": "01-04-2021"
+        },
+        {
+             // in the database
+            "service_charge_id": "SVC-20250419142210-001",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "service_charge_financial_year": "2021-2022",
+            "service_charge_amount": "10610.00",
+            "service_charge_late_fee": "530.50",
+            "service_charge_payment_date": "01-04-2022"
+        },
+        {
+             // in the database
+            "service_charge_id": "SVC-20250419142210-002",
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "user_role": "allottee",
+            "user_name": "R Arabhaya",
+            "status": "paid",
+            "service_charge_financial_year": "2022-2023",
+            "service_charge_amount": "10610.00",
+            "service_charge_late_fee": "530.50",
+            "service_charge_payment_date": "01-04-2023"
+        },
+        {
+            // not is the database new service charge, getting inserted while editing, inserting new service charge
+            "property_id": "BID-20250419142210",
+            "property_record_id": 906,
+            "user_id": 1,
+            "service_charge_financial_year": "2023-2024",
+            "service_charge_amount": 10610,
+            "service_charge_late_fee": 530.5,
+            "service_charge_total": 11140.5,
+            "service_charge_payment_date": "01-04-2024"
+          }
+    ],
+    "abhiyukti": [],
+    "changesLog": []
+}

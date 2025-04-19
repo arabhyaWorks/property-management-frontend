@@ -17,7 +17,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
 import PaymentForm from "./components/paymentForm";
 import { PropertyDetail } from "./pages/PropertyDetail";
-import EditProperty from "./pages/EditProperty";
+// import EditProperty from "./pages/EditProperty";
+import EditProperty from "./pages/oldEditProperty";
 
 // Implementation of Edit, namantaran and varasat from now on
 // property_management_dev

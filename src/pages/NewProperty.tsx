@@ -398,6 +398,9 @@ export default function CreateNewProperty() {
           ? "Yes"
           : "No";
 
+      console.log("Installments");
+      console.log(formData.installments);
+
       // Build final shape
       const payload = {
         propertyRecord: {
@@ -569,26 +572,25 @@ export default function CreateNewProperty() {
         })),
       };
 
-      // Send POST request to new endpoint
-      const response = await fetch(`${BASE_URL}/properties`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization if needed:
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(payload),
-      });
+      console.log(payload);
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create property");
-      }
+      // const response = await fetch(`${BASE_URL}/properties`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     // Authorization if needed:
+      //     // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
-      // Optionally redirect after creation
-      // For example, if payload.propertyRecord.yojna_id is used:
-      const yojnaId = payload.propertyRecord.yojna_id;
-      window.location.href = `/yojna/${yojnaId}`;
+      // const result = await response.json();
+      // if (!response.ok) {
+      //   throw new Error(result.message || "Failed to create property");
+      // }
+
+      // const yojnaId = payload.propertyRecord.yojna_id;
+      // window.location.href = `/yojna/${yojnaId}`;
     } catch (error: any) {
       console.error("Submission Error:", error);
       alert(`प्रॉपर्टी सबमिट करने में त्रुटि: ${error.message}`);
@@ -852,6 +854,11 @@ export default function CreateNewProperty() {
                           )
                         )}
                     </p>
+
+                    <p>
+                      {formData.propertyRecordDetail.first_installment_due_date}
+                    </p>
+                    <p>{formData.installments.length}</p>
                   </div>
                 )}
 
@@ -873,9 +880,7 @@ export default function CreateNewProperty() {
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               किस्त संख्या
                             </th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
-                              नियत तिथि
-                            </th>
+
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               किस्त धनराशि
                             </th>
@@ -884,6 +889,9 @@ export default function CreateNewProperty() {
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               विलंब शुल्क
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              देय तिथि
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               भुगतान तिथि
@@ -908,9 +916,7 @@ export default function CreateNewProperty() {
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {payment.payment_number}
                                   </td>
-                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                    {formatDateToDDMMYYYY(payment.due_date)}
-                                  </td>
+
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatIndianNumber(
                                       parseFloat(
@@ -927,6 +933,9 @@ export default function CreateNewProperty() {
                                     {formatIndianNumber(
                                       parseFloat(payment.late_fee || "0")
                                     )}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatDateToDDMMYYYY(payment.due_date)}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatDateToDDMMYYYY(payment.payment_date)}
@@ -1046,7 +1055,7 @@ export default function CreateNewProperty() {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            प्रथम किश्त नियत तिथि
+                            प्रथम किश्त देय तिथि
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatDateToDDMMYYYY(

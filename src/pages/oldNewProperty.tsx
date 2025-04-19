@@ -773,7 +773,7 @@ export default function CreateNewProperty() {
                               किस्त संख्या
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
-                              नियत तिथि
+                              देय तिथि
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               किस्त धनराशि
@@ -945,7 +945,7 @@ export default function CreateNewProperty() {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            प्रथम किश्त नियत तिथि
+                            प्रथम किश्त देय तिथि
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatDateToDDMMYYYY(

@@ -355,7 +355,7 @@ export function PropertyDetail() {
                   {propertyData.propertyRecordDetail.panjikaran_dhanrashi}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">पंजीकरण तिथि:</span>{" "}
+                  <span className="font-semibold min-w-40">पंजीकरण दिनांक:</span>{" "}
                   {propertyData.propertyRecordDetail.panjikaran_dinank ||
                     "उपलब्ध नहीं"}
                 </p>

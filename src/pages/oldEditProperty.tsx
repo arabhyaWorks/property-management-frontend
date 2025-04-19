@@ -55,23 +55,63 @@ const calculateLateFee = (
   return 0;
 };
 
-// const formatDateToYYYYMMDD = (dateString: string): string | null => {
-//   if (!dateString) return null;
-//   if (dateString.includes("-")) return dateString;
-//   const date = new Date(dateString);
-//   const day = String(date.getDate()).padStart(2, "0");
-//   const month = String(date.getMonth() + 1).padStart(2, "0");
-//   const year = date.getFullYear();
-//   return `${day}-${month}-${year}`;
-// };
-
-const formatDateToYYYYMMDD = (dateString: string): string | null => {
+const formatDateToDDMMYYYY = (dateString: string): string | null => {
   if (!dateString) return null;
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+const oldformatDateToYYYYMMDD = (dateString: string): string | null => {
+  if (!dateString) return null;
+
+  // console.log("dateString in dd-mm-yyyy",dateString)
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  // return `${year}-${month}-${day}`;
+  const dateYYYYMMDDDD = `${year}-${month}-${day}`;
+  // console.log("dateYYYYMMDDDD",dateYYYYMMDDDD)
+  // console.log({ "dd-mm-yyyy": dateString }, { "yyyy-mm-dd": dateYYYYMMDDDD });
+  return dateYYYYMMDDDD;
+};
+
+const formatDateToYYYYMMDD = (dateString: string): string | null => {
+  if (!dateString) return null;
+
+  // Validate format dd-mm-yyyy (e.g., 01-02-2020)
+  const regex = /^\d{2}-\d{2}-\d{4}$/;
+  if (!regex.test(dateString)) return null;
+
+  // Split the date string into day, month, year
+  const [day, month, year] = dateString.split("-").map(Number);
+
+  // Create a Date object (months are 0-based in JavaScript)
+  const date = new Date(year, month - 1, day);
+
+  // Check if the date is valid and matches the input
+  if (
+    isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  // Format the date to yyyy-mm-dd
+  const formattedYear = date.getFullYear();
+  const formattedMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const formattedDay = String(date.getDate()).padStart(2, "0");
+  const dateYYYYMMDD = `${formattedYear}-${formattedMonth}-${formattedDay}`;
+
+  // Log the input and output
+  // console.log({ "dd-mm-yyyy": dateString }, { "yyyy-mm-dd": dateYYYYMMDD });
+
+  return dateYYYYMMDD;
 };
 
 // (Optional) Aadhaar & mobile validations
@@ -117,11 +157,51 @@ export default function EditProperty({}) {
         }
 
         const data = await response.json();
-        console.log(data);
-        const { propertyRecordDetail, installments, serviceCharges } = data;
+
+        const propertyRecord = {
+          ...data.propertyRecords[0],
+          kabja_dinank: formatDateToYYYYMMDD(
+            data.propertyRecords[0].kabja_dinank
+          ),
+        };
+
+        const propertyRecordDetail = {
+          ...data.propertyRecordDetail,
+          panjikaran_dinank: formatDateToYYYYMMDD(
+            data.propertyRecordDetail.panjikaran_dinank
+          ),
+          avantan_dinank: formatDateToYYYYMMDD(
+            data.propertyRecordDetail.avantan_dinank
+          ),
+          first_installment_due_date: formatDateToYYYYMMDD(
+            data.propertyRecordDetail.first_installment_due_date
+          ),
+        };
+        const installments = data.installments.map((inst) => ({
+          ...inst,
+          due_date: formatDateToYYYYMMDD(inst.payment_due_date),
+          payment_date: formatDateToYYYYMMDD(inst.payment_date),
+          installment_amount: inst.kisht_mool_paid,
+          interest_amount: inst.kisht_byaj_paid,
+        }));
+        const serviceCharges = data.serviceCharges.map((charge) => ({
+          ...charge,
+          service_charge_payment_date: formatDateToYYYYMMDD(
+            charge.service_charge_payment_date
+          ),
+        }));
 
         setFormData({
-          propertyRecord: data.propertyRecords[data.propertyRecords.length - 1],
+          propertyRecord,
+          propertyRecordDetail,
+          installments,
+          serviceCharges,
+        });
+
+        console.log("Formatted Property Data");
+
+        console.log({
+          propertyRecord,
           propertyRecordDetail,
           installments,
           serviceCharges,
@@ -424,26 +504,28 @@ export default function EditProperty({}) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     // Only submit on the final step (step 6)
     if (currentStep !== 6) return;
-  
+
     const confirmSubmission = window.confirm(
       "क्या आप संपत्ति विवरण जमा करने के लिए निश्चित हैं?"
     );
     if (!confirmSubmission) return;
-  
+
     setIsSubmitting(true);
-  
+
     try {
       // Prepare final request body
       const pr = formData.propertyRecord;
       const prd = formData.propertyRecordDetail;
-  
+
       // Convert bhavan_nirman to "Yes"/"No" as expected by API
       const bhavanNirmanValue =
-        prd.bhavan_nirman === "true" || prd.bhavan_nirman === true ? "Yes" : "No";
-  
+        prd.bhavan_nirman === "true" || prd.bhavan_nirman === true
+          ? "Yes"
+          : "No";
+
       // Build payload matching API structure
       const payload = {
         propertyRecords: [
@@ -460,7 +542,8 @@ export default function EditProperty({}) {
             kabja_dinank: formatDateToYYYYMMDD(pr.kabja_dinank), // Corrected to use pr.kabja_dinank
             documentation_shulk: parseFloat(pr.documentation_shulk || "0"),
             aadhar_number: pr.aadhar_number,
-            aadhar_photo_link: pr.aadhar_photo_link || "https://example.com/aadhar.jpg",
+            aadhar_photo_link:
+              pr.aadhar_photo_link || "https://example.com/aadhar.jpg",
             documents_link: pr.documents_link || "https://example.com/doc.pdf",
           },
         ],
@@ -474,9 +557,11 @@ export default function EditProperty({}) {
           avantan_dhanrashi: parseFloat(prd.avantan_dhanrashi || "0"),
           avantan_dinank: formatDateToYYYYMMDD(prd.avantan_dinank),
           vikray_mulya: parseFloat(prd.vikray_mulya || "0"),
-          free_hold_dhanrashi: parseFloat(prd.free_hold_dhanrashi || "0") || null,
+          free_hold_dhanrashi:
+            parseFloat(prd.free_hold_dhanrashi || "0") || null,
           auction_keemat: parseFloat(prd.auction_keemat || "0"),
-          lease_rent_dhanrashi: parseFloat(prd.lease_rent_dhanrashi || "0") || null,
+          lease_rent_dhanrashi:
+            parseFloat(prd.lease_rent_dhanrashi || "0") || null,
           park_charge: parseFloat(prd.park_charge || "0") || null,
           corner_charge: parseFloat(prd.corner_charge || "0") || null,
           avshesh_vikray_mulya_ekmusht_jama_dhanrashi: parseFloat(
@@ -485,20 +570,26 @@ export default function EditProperty({}) {
           avshesh_vikray_mulya_ekmusht_jama_dinank: formatDateToYYYYMMDD(
             prd.avshesh_vikray_mulya_ekmusht_jama_dinank
           ),
-          ekmusht_jama_dhanrashi: parseFloat(prd.ekmusht_jama_dhanrashi || "0") || 0,
+          ekmusht_jama_dhanrashi:
+            parseFloat(prd.ekmusht_jama_dhanrashi || "0") || 0,
           byaj_dhanrashi: parseFloat(prd.byaj_dhanrashi || "0") || 0,
           dinank: formatDateToYYYYMMDD(prd.dinank),
           kshetrafal: parseFloat(prd.kshetrafal || "0") || null,
-          atirikt_bhoomi_ki_dhanrashi: parseFloat(prd.atirikt_bhoomi_ki_dhanrashi || "0"),
+          atirikt_bhoomi_ki_dhanrashi: parseFloat(
+            prd.atirikt_bhoomi_ki_dhanrashi || "0"
+          ),
           punarjivit_shulk: parseFloat(prd.punarjivit_shulk || "0"),
           praman_patra_shulk: parseFloat(prd.praman_patra_shulk || "0"),
           vigyapan_shulk: parseFloat(prd.vigyapan_shulk || "0"),
           nibandhan_shulk: parseFloat(prd.nibandhan_shulk || "0"),
           nibandhan_dinank: formatDateToYYYYMMDD(prd.nibandhan_dinank),
-          patta_bhilekh_dinank: formatDateToYYYYMMDD(prd.patta_bhilekh_dinank) || null,
-          bhavan_manchitra_swikrit_manchitra: prd.bhavan_manchitra_swikrit_manchitra || null,
+          patta_bhilekh_dinank:
+            formatDateToYYYYMMDD(prd.patta_bhilekh_dinank) || null,
+          bhavan_manchitra_swikrit_manchitra:
+            prd.bhavan_manchitra_swikrit_manchitra || null,
           bhavan_nirman: bhavanNirmanValue,
-          jama_dhan_rashi_dinank: formatDateToYYYYMMDD(prd.jama_dhan_rashi_dinank) || null,
+          jama_dhan_rashi_dinank:
+            formatDateToYYYYMMDD(prd.jama_dhan_rashi_dinank) || null,
           jama_dhan_rashid_sankhya: prd.jama_dhan_rashid_sankhya || null,
           sewer_connection_water_connection_charge: parseFloat(
             prd.sewer_connection_water_connection_charge || "0"
@@ -528,7 +619,9 @@ export default function EditProperty({}) {
               parseFloat(prd.time_period || "0")) /
               100 /
               2,
-          ideal_number_of_installments: parseInt(prd.ideal_number_of_installments || "1"),
+          ideal_number_of_installments: parseInt(
+            prd.ideal_number_of_installments || "1"
+          ),
           ideal_installment_amount_per_installment: (() => {
             const base =
               parseFloat(prd.avshesh_dhanrashi || "0") +
@@ -565,7 +658,9 @@ export default function EditProperty({}) {
             const ideal = base / n;
             return (0.18 * ideal) / 365;
           })(),
-          first_installment_due_date: formatDateToYYYYMMDD(prd.first_installment_due_date),
+          first_installment_due_date: formatDateToYYYYMMDD(
+            prd.first_installment_due_date
+          ),
         },
         installments: formData.installments.map((payment: any) => {
           const payAmount =
@@ -605,8 +700,12 @@ export default function EditProperty({}) {
           property_id: pr.property_id,
           property_record_id: prd.id, // Corrected to use prd.id
           service_charge_financial_year: charge.service_charge_financial_year,
-          service_charge_amount: parseFloat(charge.service_charge_amount || "0"),
-          service_charge_late_fee: parseFloat(charge.service_charge_late_fee || "0"),
+          service_charge_amount: parseFloat(
+            charge.service_charge_amount || "0"
+          ),
+          service_charge_late_fee: parseFloat(
+            charge.service_charge_late_fee || "0"
+          ),
           service_charge_total:
             parseFloat(charge.service_charge_amount || "0") +
             parseFloat(charge.service_charge_late_fee || "0"),
@@ -615,30 +714,33 @@ export default function EditProperty({}) {
           ),
         })),
       };
-  
+
       // Log payload for debugging
       console.log("Payload being sent:", JSON.stringify(payload, null, 2));
-  
-      // Send PUT request to update property
-      const response = await fetch(`${BASE_URL}/properties/${prd.property_id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          // Uncomment and adjust if authentication is required:
-          // "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      const result = await response.json();
-      if (!response.ok) {
-        console.error("API Error:", result);
-        throw new Error(result.message || "Failed to update property");
-      }
-  
-      // Redirect to yojna page after successful update
-      const yojnaId = payload.propertyRecords[0].yojna_id;
-      window.location.href = `/yojna/${yojnaId}`;
+
+      // // Send PUT request to update property
+      // const response = await fetch(
+      //   `${BASE_URL}/properties/${prd.property_id}`,
+      //   {
+      //     method: "PUT",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       // Uncomment and adjust if authentication is required:
+      //       // "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //     body: JSON.stringify(payload),
+      //   }
+      // );
+
+      // const result = await response.json();
+      // if (!response.ok) {
+      //   console.error("API Error:", result);
+      //   throw new Error(result.message || "Failed to update property");
+      // }
+
+      // // Redirect to yojna page after successful update
+      // const yojnaId = payload.propertyRecords[0].yojna_id;
+      // window.location.href = `/yojna/${yojnaId}`;
     } catch (error: any) {
       console.error("Submission Error:", error);
       alert(`प्रॉपर्टी अपडेट करने में त्रुटि: ${error.message}`);
@@ -930,7 +1032,7 @@ export default function EditProperty({}) {
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       किस्त देय तिथि:
                       {" " +
-                        formatDateToYYYYMMDD(
+                        formatDateToDDMMYYYY(
                           addMonths(
                             formData.propertyRecordDetail
                               .first_installment_due_date,
@@ -938,6 +1040,11 @@ export default function EditProperty({}) {
                           )
                         )}
                     </p>
+
+                    <p>
+                      {formData.propertyRecordDetail.first_installment_due_date}
+                    </p>
+                    <p>{formData.installments.length}</p>
                   </div>
                 )}
 
@@ -959,9 +1066,7 @@ export default function EditProperty({}) {
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               किस्त संख्या
                             </th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
-                              नियत तिथि
-                            </th>
+
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               किस्त धनराशि
                             </th>
@@ -970,6 +1075,9 @@ export default function EditProperty({}) {
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               विलंब शुल्क
+                            </th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
+                              देय तिथि
                             </th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white">
                               भुगतान तिथि
@@ -994,9 +1102,7 @@ export default function EditProperty({}) {
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {payment.payment_number}
                                   </td>
-                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                    {formatDateToYYYYMMDD(payment.due_date)}
-                                  </td>
+
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatIndianNumber(
                                       parseFloat(
@@ -1015,7 +1121,10 @@ export default function EditProperty({}) {
                                     )}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                    {formatDateToYYYYMMDD(payment.payment_date)}
+                                    {formatDateToDDMMYYYY(payment.due_date)}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    {formatDateToDDMMYYYY(payment.payment_date)}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatIndianNumber(totalPaymentAmount)}
@@ -1135,7 +1244,13 @@ export default function EditProperty({}) {
                             प्रथम किश्त नियत तिथि
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {formatDateToYYYYMMDD(
+                            yyyy-mm-dd
+                            {
+                              formData.propertyRecordDetail
+                                .first_installment_due_date
+                            }{" "}
+                            <br />
+                            {formatDateToDDMMYYYY(
                               formData.propertyRecordDetail
                                 .first_installment_due_date
                             )}
