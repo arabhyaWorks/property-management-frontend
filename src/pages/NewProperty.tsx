@@ -574,20 +574,20 @@ export default function CreateNewProperty() {
 
       console.log(payload);
 
-      // const response = await fetch(`${BASE_URL}/properties`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     // Authorization if needed:
-      //     // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   },
-      //   body: JSON.stringify(payload),
-      // });
+      const response = await fetch(`${BASE_URL}/properties`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization if needed:
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload),
+      });
 
-      // const result = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(result.message || "Failed to create property");
-      // }
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create property");
+      }
 
       // const yojnaId = payload.propertyRecord.yojna_id;
       // window.location.href = `/yojna/${yojnaId}`;

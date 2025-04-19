@@ -82,9 +82,26 @@ const oldformatDateToYYYYMMDD = (dateString: string): string | null => {
 const formatDateToYYYYMMDD = (dateString: string): string | null => {
   if (!dateString) return null;
 
-  // Validate format dd-mm-yyyy (e.g., 01-02-2020)
-  const regex = /^\d{2}-\d{2}-\d{4}$/;
-  if (!regex.test(dateString)) return null;
+  // Check if the date is already in YYYY-MM-DD format (e.g., 2020-02-01)
+  const yyyyMMDDRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (yyyyMMDDRegex.test(dateString)) {
+    // Validate that it's a valid date
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    if (
+      !isNaN(date.getTime()) &&
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return dateString; // Return unchanged if valid YYYY-MM-DD
+    }
+    return null; // Invalid date
+  }
+
+  // Validate format DD-MM-YYYY (e.g., 01-02-2020)
+  const ddMMYYYYRegex = /^\d{2}-\d{2}-\d{4}$/;
+  if (!ddMMYYYYRegex.test(dateString)) return null;
 
   // Split the date string into day, month, year
   const [day, month, year] = dateString.split("-").map(Number);
@@ -102,7 +119,7 @@ const formatDateToYYYYMMDD = (dateString: string): string | null => {
     return null;
   }
 
-  // Format the date to yyyy-mm-dd
+  // Format the date to YYYY-MM-DD
   const formattedYear = date.getFullYear();
   const formattedMonth = String(date.getMonth() + 1).padStart(2, "0");
   const formattedDay = String(date.getDate()).padStart(2, "0");
@@ -160,9 +177,6 @@ export default function EditProperty({}) {
 
         const propertyRecord = {
           ...data.propertyRecords[0],
-          kabja_dinank: formatDateToYYYYMMDD(
-            data.propertyRecords[0].kabja_dinank
-          ),
         };
 
         const propertyRecordDetail = {
@@ -176,6 +190,16 @@ export default function EditProperty({}) {
           first_installment_due_date: formatDateToYYYYMMDD(
             data.propertyRecordDetail.first_installment_due_date
           ),
+          kabja_dinank: formatDateToYYYYMMDD(
+            data.propertyRecords[0].kabja_dinank
+          ),
+          avshesh_vikray_mulya_ekmusht_jama_dinank: formatDateToYYYYMMDD(
+            data.propertyRecordDetail.avshesh_vikray_mulya_ekmusht_jama_dinank
+          ),
+          bhavan_nirman:
+            data.propertyRecordDetail.bhavan_nirman === "Yes"
+              ? "true"
+              : "false",
         };
         const installments = data.installments.map((inst) => ({
           ...inst,
@@ -415,26 +439,27 @@ export default function EditProperty({}) {
     currentStep,
   ]);
 
-  // Handlers
+  // Main handler
   const handleInputChange = (section: string, fieldId: string, value: any) => {
+    // Installments step (handled separately)
     if (section === "installments") {
-      // Step 4 data
       setCurrentPaymentEntry((prev: any) => ({
         ...prev,
         [fieldId]: value === "" ? null : value,
       }));
-    } else {
-      // propertyRecord / propertyRecordDetail / serviceCharges
-      setFormData((prev: any) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [fieldId]: value === "" ? null : value,
-        },
-      }));
+      return;
     }
 
-    // Handle file validations
+    // Default fallback
+    setFormData((prev: any) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [fieldId]: value === "" ? null : value,
+      },
+    }));
+
+    // File validation (already implemented in your version)
     if (fieldId === "aadhar_photo" && value) {
       const file = value as File;
       const maxSize = 200 * 1024;
@@ -526,6 +551,7 @@ export default function EditProperty({}) {
           ? "Yes"
           : "No";
 
+
       // Build payload matching API structure
       const payload = {
         propertyRecords: [
@@ -534,12 +560,18 @@ export default function EditProperty({}) {
             yojna_id: pr.yojna_id,
             property_id: pr.property_id,
             user_id: pr.user_id,
+            // "transfer_type": pr.transfer_type,
+            // "from_user_id": pr.from_user_id,
+            // "previous_record_id": pr.previous_record_id,
+            // "next_record_id": pr.next_record_id,
+            // "transfer_date": pr.transfer_date,
+            // "relationship": pr.relationship,
             avanti_ka_naam: pr.avanti_ka_naam,
             pita_pati_ka_naam: pr.pita_pati_ka_naam,
             avanti_ka_sthayi_pata: pr.avanti_ka_sthayi_pata,
             avanti_ka_vartaman_pata: pr.avanti_ka_vartaman_pata,
             mobile_no: pr.mobile_no,
-            kabja_dinank: formatDateToYYYYMMDD(pr.kabja_dinank), // Corrected to use pr.kabja_dinank
+            kabja_dinank: formatDateToDDMMYYYY(prd.kabja_dinank),
             documentation_shulk: parseFloat(pr.documentation_shulk || "0"),
             aadhar_number: pr.aadhar_number,
             aadhar_photo_link:
@@ -553,9 +585,9 @@ export default function EditProperty({}) {
           sampatti_sreni: prd.sampatti_sreni,
           avanti_sampatti_sankhya: prd.avanti_sampatti_sankhya,
           panjikaran_dhanrashi: parseFloat(prd.panjikaran_dhanrashi || "0"),
-          panjikaran_dinank: formatDateToYYYYMMDD(prd.panjikaran_dinank),
+          panjikaran_dinank: formatDateToDDMMYYYY(prd.panjikaran_dinank),
           avantan_dhanrashi: parseFloat(prd.avantan_dhanrashi || "0"),
-          avantan_dinank: formatDateToYYYYMMDD(prd.avantan_dinank),
+          avantan_dinank: formatDateToDDMMYYYY(prd.avantan_dinank),
           vikray_mulya: parseFloat(prd.vikray_mulya || "0"),
           free_hold_dhanrashi:
             parseFloat(prd.free_hold_dhanrashi || "0") || null,
@@ -567,13 +599,13 @@ export default function EditProperty({}) {
           avshesh_vikray_mulya_ekmusht_jama_dhanrashi: parseFloat(
             prd.avshesh_vikray_mulya_ekmusht_jama_dhanrashi || "0"
           ),
-          avshesh_vikray_mulya_ekmusht_jama_dinank: formatDateToYYYYMMDD(
+          avshesh_vikray_mulya_ekmusht_jama_dinank: formatDateToDDMMYYYY(
             prd.avshesh_vikray_mulya_ekmusht_jama_dinank
           ),
           ekmusht_jama_dhanrashi:
             parseFloat(prd.ekmusht_jama_dhanrashi || "0") || 0,
           byaj_dhanrashi: parseFloat(prd.byaj_dhanrashi || "0") || 0,
-          dinank: formatDateToYYYYMMDD(prd.dinank),
+          dinank: formatDateToDDMMYYYY(prd.dinank),
           kshetrafal: parseFloat(prd.kshetrafal || "0") || null,
           atirikt_bhoomi_ki_dhanrashi: parseFloat(
             prd.atirikt_bhoomi_ki_dhanrashi || "0"
@@ -582,14 +614,14 @@ export default function EditProperty({}) {
           praman_patra_shulk: parseFloat(prd.praman_patra_shulk || "0"),
           vigyapan_shulk: parseFloat(prd.vigyapan_shulk || "0"),
           nibandhan_shulk: parseFloat(prd.nibandhan_shulk || "0"),
-          nibandhan_dinank: formatDateToYYYYMMDD(prd.nibandhan_dinank),
+          nibandhan_dinank: formatDateToDDMMYYYY(prd.nibandhan_dinank),
           patta_bhilekh_dinank:
-            formatDateToYYYYMMDD(prd.patta_bhilekh_dinank) || null,
+            formatDateToDDMMYYYY(prd.patta_bhilekh_dinank) || null,
           bhavan_manchitra_swikrit_manchitra:
             prd.bhavan_manchitra_swikrit_manchitra || null,
           bhavan_nirman: bhavanNirmanValue,
           jama_dhan_rashi_dinank:
-            formatDateToYYYYMMDD(prd.jama_dhan_rashi_dinank) || null,
+            formatDateToDDMMYYYY(prd.jama_dhan_rashi_dinank) || null,
           jama_dhan_rashid_sankhya: prd.jama_dhan_rashid_sankhya || null,
           sewer_connection_water_connection_charge: parseFloat(
             prd.sewer_connection_water_connection_charge || "0"
@@ -658,7 +690,7 @@ export default function EditProperty({}) {
             const ideal = base / n;
             return (0.18 * ideal) / 365;
           })(),
-          first_installment_due_date: formatDateToYYYYMMDD(
+          first_installment_due_date: formatDateToDDMMYYYY(
             prd.first_installment_due_date
           ),
         },
@@ -683,6 +715,7 @@ export default function EditProperty({}) {
             property_record_id: prd.id, // Corrected to use prd.id
             payment_number: payment.payment_number,
             payment_amount: payAmount,
+            user_id: pr.user_id,
             kisht_mool_paid: parseFloat(payment.installment_amount || "0"),
             kisht_byaj_paid: parseFloat(payment.interest_amount || "0"),
             payment_due_date: formatDateToYYYYMMDD(payment.due_date),
@@ -693,54 +726,58 @@ export default function EditProperty({}) {
               payAmount + parseFloat(payment.late_fee || "0"),
           };
         }),
-        serviceCharges: formData.serviceCharges.map((charge: any) => ({
-          ...(charge.service_charge_id && {
-            service_charge_id: charge.service_charge_id,
-          }),
-          property_id: pr.property_id,
-          property_record_id: prd.id, // Corrected to use prd.id
-          service_charge_financial_year: charge.service_charge_financial_year,
-          service_charge_amount: parseFloat(
-            charge.service_charge_amount || "0"
-          ),
-          service_charge_late_fee: parseFloat(
-            charge.service_charge_late_fee || "0"
-          ),
-          service_charge_total:
-            parseFloat(charge.service_charge_amount || "0") +
-            parseFloat(charge.service_charge_late_fee || "0"),
-          service_charge_payment_date: formatDateToYYYYMMDD(
-            charge.service_charge_payment_date
-          ),
-        })),
+        serviceCharges: formData.serviceCharges
+          .map((charge: any) => ({
+            ...(charge.service_charge_id && {
+              service_charge_id: charge.service_charge_id,
+            }),
+            property_id: pr.property_id,
+            property_record_id: prd.id, // Corrected to use prd.id
+            service_charge_financial_year: charge.service_charge_financial_year,
+            service_charge_amount: parseFloat(
+              charge.service_charge_amount || "0"
+            ),
+            service_charge_late_fee: parseFloat(
+              charge.service_charge_late_fee || "0"
+            ),
+            user_id: pr.user_id,
+            service_charge_total:
+              parseFloat(charge.service_charge_amount || "0") +
+              parseFloat(charge.service_charge_late_fee || "0"),
+            service_charge_payment_date: formatDateToDDMMYYYY(
+              charge.service_charge_payment_date
+            ),
+          })),
       };
 
       // Log payload for debugging
       console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
-      // // Send PUT request to update property
-      // const response = await fetch(
-      //   `${BASE_URL}/properties/${prd.property_id}`,
-      //   {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       // Uncomment and adjust if authentication is required:
-      //       // "Authorization": `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //     body: JSON.stringify(payload),
-      //   }
-      // );
+alert("are you sure to update property?")
 
-      // const result = await response.json();
-      // if (!response.ok) {
-      //   console.error("API Error:", result);
-      //   throw new Error(result.message || "Failed to update property");
-      // }
+      // Send PUT request to update property
+      const response = await fetch(
+        `${BASE_URL}/properties/${prd.property_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            // Uncomment and adjust if authentication is required:
+            // "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-      // // Redirect to yojna page after successful update
-      // const yojnaId = payload.propertyRecords[0].yojna_id;
-      // window.location.href = `/yojna/${yojnaId}`;
+      const result = await response.json();
+      if (!response.ok) {
+        console.error("API Error:", result);
+        throw new Error(result.message || "Failed to update property");
+      }
+
+      // Redirect to yojna page after successful update
+      const yojnaId = payload.propertyRecords[0].yojna_id;
+      window.location.href = `/yojna/${yojnaId}`;
     } catch (error: any) {
       console.error("Submission Error:", error);
       alert(`प्रॉपर्टी अपडेट करने में त्रुटि: ${error.message}`);
@@ -748,15 +785,6 @@ export default function EditProperty({}) {
       setIsSubmitting(false);
     }
   };
-
-  // Step -> which part of formData to update
-  // 0 -> propertyRecord
-  // 1 -> propertyRecordDetail
-  // 2 -> propertyRecordDetail
-  // 3 -> propertyRecordDetail
-  // 4 -> installments
-  // 5 -> propertyRecordDetail
-  // 6 -> serviceCharges
   const sectionMap: { [key: number]: string } = {
     0: "propertyRecord",
     1: "propertyRecordDetail",
@@ -1040,11 +1068,6 @@ export default function EditProperty({}) {
                           )
                         )}
                     </p>
-
-                    <p>
-                      {formData.propertyRecordDetail.first_installment_due_date}
-                    </p>
-                    <p>{formData.installments.length}</p>
                   </div>
                 )}
 
@@ -1241,15 +1264,9 @@ export default function EditProperty({}) {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            प्रथम किश्त नियत तिथि
+                            प्रथम किस्त की देय तिथि
                           </p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            yyyy-mm-dd
-                            {
-                              formData.propertyRecordDetail
-                                .first_installment_due_date
-                            }{" "}
-                            <br />
                             {formatDateToDDMMYYYY(
                               formData.propertyRecordDetail
                                 .first_installment_due_date
