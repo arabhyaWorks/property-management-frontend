@@ -712,7 +712,7 @@ export default function EditProperty({}) {
           return {
             ...(payment.payment_id && { payment_id: payment.payment_id }),
             property_id: pr.property_id,
-            property_record_id: prd.id, // Corrected to use prd.id
+            property_record_id: pr.id, 
             payment_number: payment.payment_number,
             payment_amount: payAmount,
             user_id: pr.user_id,
@@ -732,7 +732,7 @@ export default function EditProperty({}) {
               service_charge_id: charge.service_charge_id,
             }),
             property_id: pr.property_id,
-            property_record_id: prd.id, // Corrected to use prd.id
+            property_record_id: pr.id, // Corrected to use prd.id
             service_charge_financial_year: charge.service_charge_financial_year,
             service_charge_amount: parseFloat(
               charge.service_charge_amount || "0"
@@ -749,9 +749,10 @@ export default function EditProperty({}) {
             ),
           })),
       };
-
+console.log( payload);
       // Log payload for debugging
       console.log("Payload being sent:", JSON.stringify(payload, null, 2));
+
 
 alert("are you sure to update property?")
 

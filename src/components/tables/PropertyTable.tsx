@@ -35,15 +35,15 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchField, setSearchField] = useState<string>("property_id");
+  const [searchField, setSearchField] = useState<string>("avanti_ka_naam");
   const [selectedYojna, setSelectedYojna] = useState<string>(yojna_id);
   const [selectedSampattiSreni, setSelectedSampattiSreni] =
     useState<string>("");
 
   const searchFields = [
+    { value: "avanti_ka_naam", label: "Owner Name" },
     { value: "property_id", label: "Property ID" },
     { value: "mobile_no", label: "Mobile Number" },
-    { value: "avanti_ka_naam", label: "Owner Name" },
     { value: "avanti_sampatti_sankhya", label: "Property Number" },
     { value: "property_floor_type", label: "Floor Type" },
   ];
@@ -301,9 +301,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                       searchFields.find((f) => f.value === searchField)?.label
                     }...`}
                     className=" p-4 w-full py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg"
-                    // className="pl-11 pr-4 "
                   />
-                  {/* <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" /> */}
                 </div>
                 <button
                   onClick={handleSearch}
@@ -402,8 +400,12 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {data.map((item) => (
               <tr
+              onClick={() => {
+                // navigate(`/property/${item.property_id}`);
+                window.open(`/property/${item.property_id}`)
+              }}
                 key={item.property_id}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 {visibleColumns.map((field) => (
                   <td
