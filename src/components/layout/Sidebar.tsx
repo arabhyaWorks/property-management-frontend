@@ -11,7 +11,8 @@ import {
   X,
   LogOut,
   PlayCircle,
-  Calculator
+  Calculator,
+  IndianRupee
 } from 'lucide-react';
 import { SidebarSchemeList } from './SidebarSchemeList';
 import { SidebarHeader } from './SidebarHeader';
@@ -81,6 +82,20 @@ export function Sidebar() {
             >
               <Building2 className="h-5 w-5" />
               {!isCollapsed && <span>{t('allSchemes')}</span>}
+            </NavLink>
+
+            <NavLink
+              to="/payment-dashboard"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 p-3 rounded-lg transition-colors',
+                  isActive ? 'bg-blue-700' : 'hover:bg-blue-700/50',
+                  isCollapsed && 'justify-center'
+                )
+              }
+            >
+              <IndianRupee className="h-5 w-5" />
+              {!isCollapsed && <span>Payment Dashboard</span>}
             </NavLink>
           </div>
           

@@ -58,7 +58,7 @@ const TransactionHistory = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fadeIn mt-[20px]">
+    <div className="space-y-6 animate-fadeIn ">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-800">Recent Transactions</h2>
         {/* <span className="text-sm text-gray-500">
