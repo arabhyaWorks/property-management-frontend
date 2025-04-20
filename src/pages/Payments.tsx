@@ -192,14 +192,14 @@ export function Payments() {
           </div>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              transaction.status === "paid"
+              transaction.transaction_error_type === "success"
                 ? "bg-green-100 text-green-800"
-                : transaction.status === "pending"
+                : transaction.transaction_error_type === "pending"
                 ? "bg-yellow-100 text-yellow-800"
                 : "bg-red-100 text-red-800"
             }`}
           >
-            {transaction.status || "Unknown"}
+            {transaction.transaction_error_type || "Unknown"}
           </span>
         </div>
 

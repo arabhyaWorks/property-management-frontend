@@ -72,3 +72,17 @@ export async function updateProperty(propertyId: string, propertyData: any) {
     throw error;
   }
 }
+
+
+export const fetchTransactions = async (page = 1, limit = 10) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/payments/transaction-logs?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch transactions');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw error;
+  }
+};

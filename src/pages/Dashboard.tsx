@@ -10,6 +10,8 @@ import {
   Home,
 } from "lucide-react";
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import TransactionHistory from "../components/TransactionHistory/TransactionHistory";
+
 const schemeDistribution = [
   { name: "Housing", value: 8 },
   { name: "Commercial", value: 4 },
@@ -34,17 +36,17 @@ export function Dashboard() {
       <div className="p-8 bg-gray-50 dark:bg-gray-900">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t('dashboardOverview')}
+            {t("dashboardOverview")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {t('welcomeMessage')}
+            {t("welcomeMessage")}
           </p>
         </div>
 
         {/* Overview Stats */}
+          <DashboardStats />
 
-
-        <DashboardStats />
+          <TransactionHistory />
         {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ">
           <StatsCard
             title="Total Schemes"
@@ -121,7 +123,6 @@ export function Dashboard() {
             trend={{ value: 5, isPositive: false }}
           />
         </div> */}
-
 
         {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <MonthlyRevenue />

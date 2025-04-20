@@ -8,11 +8,10 @@ interface SidebarSchemeListProps {
 }
 
 const schemes = [
-  { id: 'yojna/CAR', name: 'कार्पेट सिटि', type: 'Residential' },
+  { id: 'yojna/BID', name: 'बीडा मार्ट', type: 'Commercial' },
   { id: 'yojna/HAR', name: 'हरियाव आवासीय योजना', type: 'Mixed Use' },
   { id: 'yojna/IID', name: 'आई0आई0डी0', type: 'Mixed Use' },
-  // { id: 'jamunipur', name: 'Jamunipur', type: 'Mixed Use' },
-  // { id: 'jamunipur', name: 'Jamunipur', type: 'Mixed Use' },
+  // { id: 'yojna/CAR', name: 'कार्पेट सिटि', type: 'Residential' },
   // { id: 'jamunipur', name: 'Jamunipur', type: 'Mixed Use' },
 ];
 
