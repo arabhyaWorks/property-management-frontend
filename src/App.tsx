@@ -20,6 +20,12 @@ import { PropertyDetail } from "./pages/PropertyDetail";
 // import EditProperty from "./pages/EditProperty";
 import EditProperty from "./pages/oldEditProperty";
 import PaymentDashboard from "./pages/PaymentDashboard";
+import PropertyHome from "./alottee/pages/PropertyHome";
+import PropertyLogin from "./alottee/pages/propertyLogin";
+import PropertyDetails from "./alottee/pages/PropertyDetails";
+import ServiceCharges from "./alottee/pages/ServiceCharge";
+import EMIPayment from "./alottee/pages/EMIPayment";
+import Profile from "./alottee/pages/Profile";
 
 // Implementation of Edit, namantaran and varasat from now on
 // property_management_dev
@@ -55,6 +61,15 @@ export default function App() {
               <Route path="/users" element={<Users />} />
               <Route path="/payment-details" element={<PaymentDetails />} />
               <Route path="/settings" element={<Settings />} />
+
+              <Route path="/alottee" element={<PropertyHome />} />
+              {/* <Route path="/alottee/login" element={<PropertyLogin />} /> */}
+              <Route path="/alottee/property/details"element={<PropertyDetails />} />
+              <Route path="/alottee/property/service-charges"element={<ServiceCharges />} />
+              <Route path="/alottee/property/pay-emi" element={<EMIPayment />} />
+              <Route path="/alottee/profile" element={<Profile />} />
+
+
 
               {/* </Route> */}
             </Routes>

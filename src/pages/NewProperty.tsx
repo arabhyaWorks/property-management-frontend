@@ -589,8 +589,8 @@ export default function CreateNewProperty() {
         throw new Error(result.message || "Failed to create property");
       }
 
-      // const yojnaId = payload.propertyRecord.yojna_id;
-      // window.location.href = `/yojna/${yojnaId}`;
+      const yojnaId = payload.propertyRecord.yojna_id;
+      window.location.href = `/yojna/${yojnaId}`;
     } catch (error: any) {
       console.error("Submission Error:", error);
       alert(`प्रॉपर्टी सबमिट करने में त्रुटि: ${error.message}`);
