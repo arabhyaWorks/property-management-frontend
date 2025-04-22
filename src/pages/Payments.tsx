@@ -3,7 +3,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import React, { useRef, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Globe } from "lucide-react";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -13,6 +13,9 @@ import upLogo from "../assets/upLogo.png";
 
 import bidaLogoBase64 from "../assets/BIDA-logo.jpg";
 import upLogoBase64 from "../assets/upLogo.png";
+
+// const bidaLogoBase64 = "";
+// const upLogoBase64 = "";
 
 function generateReceiptPdf(transactionData) {
   const { transaction, payments } = transactionData;
@@ -956,41 +959,72 @@ const Payments = () => {
             </div>
           </div>
 
-          <DownloadButton
-            transactionData={transactionData}
-          />
+          <DownloadButton transactionData={transactionData} />
 
-          <button
-            onClick={() => {
-              window.location.href =
-                "https://propertyapp.bidabhadohi.com/property/home";
-            }}
-            style={{
-              width: "100%",
-              marginTop: "1.5rem",
-              backgroundColor: "#6f1cff",
-              color: "#ffffff",
-              padding: "0.75rem 1rem",
-              borderRadius: "0.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "background-color 0.3s",
-              boxShadow:
-                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-            }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = "#844dff")
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = "#6f1cff")
-            }
-          >
-            <ArrowLeft
-              style={{ width: "20px", height: "20px", marginRight: "0.5rem" }}
-            />
-            Go Back
-          </button>
+          <div className="flex gap-5">
+            <button
+              onClick={() => {
+                window.location.href =
+                  "https://propertyapp.bidabhadohi.com/property/home";
+              }}
+              style={{
+                width: "100%",
+                marginTop: "1.5rem",
+                backgroundColor: "#6f1cff",
+                color: "#ffffff",
+                padding: "0.75rem 1rem",
+                borderRadius: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background-color 0.3s",
+                boxShadow:
+                  "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#844dff")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#6f1cff")
+              }
+            >
+              <ArrowLeft
+                style={{ width: "20px", height: "20px", marginRight: "0.5rem" }}
+              />
+              Go Back
+            </button>
+
+            <button
+              onClick={() => {
+                window.open(window.location.href, "_blank");
+              }}
+              style={{
+                width: "100%",
+                marginTop: "1.5rem",
+                backgroundColor: "#6f1cff",
+                color: "#ffffff",
+                padding: "0.75rem 1rem",
+                borderRadius: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background-color 0.3s",
+                boxShadow:
+                  "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#844dff")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#6f1cff")
+              }
+            >
+              <Globe
+                style={{ width: "20px", height: "20px", marginRight: "0.5rem" }}
+              />
+              Open in Browser
+            </button>
+          </div>
 
           <div
             style={{

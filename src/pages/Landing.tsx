@@ -11,13 +11,13 @@ import { Footer } from '../components/Footer';
 export function Landing() {
   return (
     <div className="min-h-screen">
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar />
       <Hero />
       <Features />
       <HowItWorks />
       <Schemes />
-      <FAQ />
+      {/* <FAQ /> */}
       <Footer />
     </div>
   );

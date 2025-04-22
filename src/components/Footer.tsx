@@ -24,7 +24,8 @@ export function Footer() {
             <ul className="space-y-2">
               <li><a href="#features" className="text-blue-200 hover:text-white">Features</a></li>
               <li><a href="#schemes" className="text-blue-200 hover:text-white">Schemes</a></li>
-              <li><a href="#faq" className="text-blue-200 hover:text-white">FAQ</a></li>
+              {/* <li><a href="#faq" className="text-blue-200 hover:text-white">FAQ</a></li> */}
+          
               <li><a href="/login" className="text-blue-200 hover:text-white">Login</a></li>
             </ul>
           </div>
@@ -34,15 +35,16 @@ export function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center space-x-2">
                 <Phone className="h-5 w-5 text-blue-200" />
-                <span className="text-blue-200">+91 542 236 7568</span>
+                <span className="text-blue-200">05414-226610</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Mail className="h-5 w-5 text-blue-200" />
-                <span className="text-blue-200">contact@bidabhadohi.com</span>
+                <span className="text-blue-200">bidabhadohi@rediffmail.com</span>
               </li>
               <li className="flex items-center space-x-2">
                 <MapPin className="h-5 w-5 text-blue-200" />
-                <span className="text-blue-200">Bhadohi, UP 221401</span>
+                <span className="text-blue-200">Bhadohi Industrial Development Authority (BIDA), Near Rajpura Chauraha, District - Bhadohi, 221401
+                Uttar Pradesh, India</span>
               </li>
             </ul>
           </div>
@@ -50,8 +52,8 @@ export function Footer() {
           <div>
             <h3 className="font-bold text-lg mb-4">Office Hours</h3>
             <p className="text-blue-200">Monday - Saturday</p>
-            <p className="text-blue-200">9:00 AM - 5:00 PM</p>
-            <p className="text-blue-200 mt-2">Closed on Sundays and Government Holidays</p>
+            <p className="text-blue-200">10:00 AM to 5:00 PM</p>
+            {/* <p className="text-blue-200 mt-2">Closed on Sundays and Government Holidays</p> */}
           </div>
         </div>
 

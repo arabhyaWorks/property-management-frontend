@@ -239,8 +239,8 @@ const ServiceCharges: React.FC = () => {
     const url = "https://emd.bidabhadohi.com/propertyMartPayment/payment";
     const data = {
       order_id: orderId,
-      // amount: amount,
-      amount: 2,
+      amount: amount,
+      // amount: 2,
       customer_name: propertyRecord.avanti_ka_naam || "Unknown",
       customer_email: "customer@example.com", // Replace with actual if available
       customer_mobile: "8800218342", // Replace with actual if available

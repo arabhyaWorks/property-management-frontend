@@ -87,7 +87,7 @@ export function Property() {
             registrationAmount={parseFloat(stats.total_panjikaran_dhanrashi)}
             freeholdAmount={parseFloat(stats.total_free_hold_dhanrashi)}
             leaseRent={parseFloat(stats.total_lease_rent_dhanrashi)}
-            serviceCharge={0} // Not provided in /api/financial, default to 0
+            serviceCharge={"5,39,245"} // Not provided in /api/financial, default to 0
             parkCharge={parseFloat(stats.total_park_charge)}
             cornerCharge={parseFloat(stats.total_corner_charge)}
           />

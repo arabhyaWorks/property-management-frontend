@@ -28,7 +28,7 @@ export function Hero() {
             onClick={() => navigate('/login')}
             className="bg-[#1e3a8a] text-white px-6 py-3 rounded-md font-medium hover:bg-blue-800 text-lg"
           >
-            Access Dashboard
+            Login
           </button>
         </div>
       </div>

@@ -73,8 +73,16 @@ function EMIPayment() {
         payment_amount: (installmentAmount + interestAmount).toFixed(2),
         kisht_mool_paid: installmentAmount.toFixed(2),
         kisht_byaj_paid: interestAmount.toFixed(2),
-        payment_due_date: dueDate.toISOString().split("T")[0],
-        payment_date: today.toISOString().split("T")[0],
+        payment_due_date: dueDate.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).split("/").join("-"),
+        payment_date: today.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).split("/").join("-"),
         number_of_days_delayed: daysDelayed,
         late_fee_amount: lateFeeAmount.toFixed(2),
         total_payment_amount_with_late_fee: totalAmount.toFixed(2),
@@ -126,8 +134,8 @@ function EMIPayment() {
     const url = "https://emd.bidabhadohi.com/propertyMartPayment/payment";
     const data = {
       order_id: orderId,
-      // amount: amount,
-      amount: 2,
+      amount: amount,
+      // amount: 2,
       customer_name: propertyRecord?.avanti_ka_naam || "Unknown",
       customer_email: "customer@example.com", // Replace with actual email if available
       customer_mobile: "8800218342", // Replace with actual mobile if available
