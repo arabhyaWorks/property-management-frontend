@@ -3,7 +3,9 @@ import axios from 'axios';
 import newBaseEndpoint from './enpoints';
 
 // const API_BASE_URL = 'http://localhost:3000/api';
-const API_BASE_URL = 'https://apiproperty.bidabhadohi.com/api';
+// const API_BASE_URL = 'https://apiproperty.bidabhadohi.com/api';
+const API_BASE_URL =  newBaseEndpoint +'/api';
+
 
 
 interface LoginResponse {

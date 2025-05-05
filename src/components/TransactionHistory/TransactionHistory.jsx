@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import TransactionCard from './TransactionCard';
-import Pagination from './Pagination';
-import { fetchTransactions } from '../../services/api';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import TransactionCard from "./TransactionCard";
+import Pagination from "./Pagination";
+import { fetchTransactions } from "../../services/api";
+import { Loader2 } from "lucide-react";
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -10,7 +10,7 @@ const TransactionHistory = () => {
     currentPage: 1,
     pageSize: 10,
     totalRecords: 0,
-    totalPages: 1
+    totalPages: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,8 +27,8 @@ const TransactionHistory = () => {
       setPagination(response.pagination);
       setError(null);
     } catch (err) {
-      console.error('Error loading transactions:', err);
-      setError('Failed to load transactions. Please try again later.');
+      console.error("Error loading transactions:", err);
+      setError("Failed to load transactions. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -60,34 +60,44 @@ const TransactionHistory = () => {
   return (
     <div className="space-y-6 animate-fadeIn ">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Recent Transactions</h2>
+        <h2 className="text-xl font-semibold text-gray-800">
+          Recent Transactions
+        </h2>
         {/* <span className="text-sm text-gray-500">
           Showing {transactions.length} of {pagination.totalRecords} transactions
         </span> */}
       </div>
-      
+
+      {pagination.totalPages > 1 && (
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
+
       {transactions.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
           No transactions found.
         </div>
       ) : (
         <div className="space-y-4">
-          {transactions.map(transaction => (
-            <TransactionCard 
-              key={transaction.transaction.id} 
-              transaction={transaction} 
+          {transactions.map((transaction) => (
+            <TransactionCard
+              key={transaction.transaction.id}
+              transaction={transaction}
             />
           ))}
         </div>
       )}
-      
-      {/* {pagination.totalPages > 1 && (
-        <Pagination 
+
+      {pagination.totalPages > 1 && (
+        <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
           onPageChange={handlePageChange}
         />
-      )} */}
+      )}
     </div>
   );
 };

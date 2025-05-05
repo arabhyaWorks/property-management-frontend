@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import StatusBadge from './StatusBadge';
 import PaymentDetails from './PaymentDetails';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { ChevronDown, ChevronUp, CreditCard, Receipt } from 'lucide-react';
+import { ChevronDown, ChevronUp, CreditCard, Receipt, FileText, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const TransactionCard = ({ transaction }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,7 +48,18 @@ const TransactionCard = ({ transaction }) => {
             
             <div className="mt-2 sm:mt-0 flex flex-col sm:items-end">
               <div className="font-medium text-gray-900">{formatCurrency(txn.amount)}</div>
-              <StatusBadge status={txn.transaction_error_type || txn.status} />
+              <div className="flex items-center gap-2">
+              <Link 
+                  to={`/payment/${txn.orderId}`}
+                  className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Payment Receipt
+                </Link>
+                <StatusBadge status={txn.transaction_error_type || txn.status} />
+        
+              </div>
             </div>
           </div>
           

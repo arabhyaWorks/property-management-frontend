@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Toaster } from "react-hot-toast";
 import BASE_URL from "../data/endpoint";
+import PropertyExportPDF from '../components/PropertyExportPDF';
 
 interface TransferFormData {
   yojna_id: string;
@@ -202,6 +203,11 @@ export function PropertyDetail() {
             >
               <Plus />
             </button>
+
+            <PropertyExportPDF 
+              propertyData={propertyData} 
+              propertyId={property_id} 
+            />
           </div>
         </div>
 

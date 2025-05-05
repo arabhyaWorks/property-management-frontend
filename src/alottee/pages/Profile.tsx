@@ -11,6 +11,7 @@ import {
   Home,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import newBaseEndpoint from '../../services/enpoints'
 
 function Profile() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ function Profile() {
         }
 
         const response = await fetch(
-          `https://apiproperty.bidabhadohi.com/users/by-mobile?page=1&limit=10&yojna_id=BID&mobile_no=${mobileNo}`
+          `${newBaseEndpoint}/users/by-mobile?page=1&limit=10&yojna_id=BID&mobile_no=${mobileNo}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch profile data");

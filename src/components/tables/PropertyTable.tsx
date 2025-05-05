@@ -39,13 +39,21 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
   const [selectedYojna, setSelectedYojna] = useState<string>(yojna_id);
   const [selectedSampattiSreni, setSelectedSampattiSreni] =
     useState<string>("");
+  const [selectedFloorType, setSelectedFloorType] = useState<string>("");
 
   const searchFields = [
     { value: "avanti_ka_naam", label: "Owner Name" },
     { value: "property_id", label: "Property ID" },
     { value: "mobile_no", label: "Mobile Number" },
-    { value: "avanti_sampatti_sankhya", label: "Property Number" },
-    { value: "property_floor_type", label: "Floor Type" },
+    { value: "avanti_sampatti_sankhya", label: "Sampatti Sankhya" },
+  ];
+
+  const floorTypes = [
+    { value: "", label: "All Floor Types" },
+    { value: "LGF", label: "LGF" },
+    { value: "UGF", label: "UGF" },
+    { value: "First Floor", label: "First Floor" },
+    { value: "Second Floor", label: "Second Floor" },
   ];
 
   const exportToExcel = async () => {
@@ -54,7 +62,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
       const params: any = {
         transfer_type: "none",
         page: 1,
-        limit: 1000, // Set limit to 1000 for export
+        limit: 1000,
       };
 
       if (searchQuery) {
@@ -67,6 +75,10 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
 
       if (selectedSampattiSreni) {
         params.sampatti_sreni = selectedSampattiSreni;
+      }
+
+      if (selectedFloorType) {
+        params.property_floor_type = selectedFloorType;
       }
 
       const response = await getProperties(params);
@@ -86,7 +98,6 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Properties");
 
-      // Auto-size columns
       const colWidths = visibleColumns.map((field) => {
         const label =
           dataLabels.getResponse.find((l) => l.key === field)?.label || field;
@@ -94,7 +105,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
           label.length,
           ...exportData.map((row) => String(row[label] || "").length)
         );
-        return { wch: Math.min(maxLength + 2, 50) }; // Add padding, max width 50
+        return { wch: Math.min(maxLength + 2, 50) };
       });
       worksheet["!cols"] = colWidths;
 
@@ -130,7 +141,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, selectedYojna, selectedSampattiSreni, yojna_id]);
+  }, [currentPage, selectedYojna, selectedSampattiSreni, selectedFloorType, yojna_id]);
 
   const fetchYojnas = async () => {
     try {
@@ -163,6 +174,10 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
         params.sampatti_sreni = selectedSampattiSreni;
       }
 
+      if (selectedFloorType) {
+        params.property_floor_type = selectedFloorType;
+      }
+
       const response = await getProperties(params);
       console.log(response.data);
       setData(response.data);
@@ -176,7 +191,7 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1);
     fetchData();
   };
 
@@ -237,81 +252,20 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto p-3">
-          <div className="space-y-6 sm:space-y-0 sm:flex sm:items-start sm:gap-6">
-            <div className="flex w-full gap-2">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowColumnSelector(!showColumnSelector)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  <Columns className="h-5 w-5" />
-                  <span>Columns</span>
-                </button>
-
-                {showColumnSelector && (
-                  <>
-                    <div
-                      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-                      onClick={() => setShowColumnSelector(false)}
-                    />
-                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl z-50">
-                      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Customize Columns
-                        </h3>
-                        <button
-                          onClick={() => setShowColumnSelector(false)}
-                          className="text-gray-400 hover:text-gray-500"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      </div>
-                      <div className="p-6 bg-gray-50/50">
-                        <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-2">
-                          {dataLabels.getResponse.map(({ key, label }) => (
-                            <label
-                              key={key}
-                              className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-lg hover:border-gray-200 cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={visibleColumns.includes(key)}
-                                onChange={() => toggleColumn(key)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600"
-                              />
-                              <span className="text-sm text-gray-700 font-medium">
-                                {label}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
+          {/* First Level: Search and Export */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex w-full max-w-2xl gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={`Search by ${
+                    searchFields.find((f) => f.value === searchField)?.label
+                  }...`}
+                  className="p-4 w-full py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg"
+                />
               </div>
-
-              <div className="w-full flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={`Search by ${
-                      searchFields.find((f) => f.value === searchField)?.label
-                    }...`}
-                    className=" p-4 w-full py-2.5 text-gray-900 placeholder:text-gray-400 bg-white border border-gray-200 rounded-lg"
-                  />
-                </div>
-                <button
-                  onClick={handleSearch}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700"
-                >
-                  <Search className="h-5 w-5" />
-                  {/* Search */}
-                </button>
-              </div>
-
               <select
                 value={searchField}
                 onChange={(e) => setSearchField(e.target.value)}
@@ -323,50 +277,125 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={handleSearch}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </div>
+            <button
+              onClick={exportToExcel}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700"
+            >
+              <Download className="h-5 w-5" />
+              <span>Export</span>
+            </button>
+          </div>
 
+          {/* Second Level: Filters */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowColumnSelector(!showColumnSelector)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                <Columns className="h-5 w-5" />
+                <span>Columns</span>
+              </button>
+
+              {showColumnSelector && (
+                <>
+                  <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                    onClick={() => setShowColumnSelector(false)}
+                  />
+                  <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl z-50">
+                    <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Customize Columns
+                      </h3>
+                      <button
+                        onClick={() => setShowColumnSelector(false)}
+                        className="text-gray-400 hover:text-gray-500"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="p-6 bg-gray-50/50">
+                      <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-2">
+                        {dataLabels.getResponse.map(({ key, label }) => (
+                          <label
+                            key={key}
+                            className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-lg hover:border-gray-200 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={visibleColumns.includes(key)}
+                              onChange={() => toggleColumn(key)}
+                              className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                            />
+                            <span className="text-sm text-gray-700 font-medium">
+                              {label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="relative">
+              <select
+                value={selectedYojna}
+                onChange={(e) => setSelectedYojna(e.target.value)}
+                className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg"
+              >
+                <option value="">All Yojnas</option>
+                {yojnas.map((yojna) => (
+                  <option key={yojna.yojna_id} value={yojna.yojna_id}>
+                    {yojna.yojna_name}
+                  </option>
+                ))}
+              </select>
+              <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            </div>
+
+            {selectedYojna && (
               <div className="relative">
                 <select
-                  value={selectedYojna}
-                  onChange={(e) => setSelectedYojna(e.target.value)}
+                  value={selectedSampattiSreni}
+                  onChange={(e) => setSelectedSampattiSreni(e.target.value)}
                   className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg"
                 >
-                  <option value="">All Yojnas</option>
-                  {yojnas.map((yojna) => (
-                    <option key={yojna.yojna_id} value={yojna.yojna_id}>
-                      {yojna.yojna_name}
-                    </option>
-                  ))}
+                  <option value="">All Sampatti Sreni</option>
+                  {yojnas
+                    .find((y) => y.yojna_id === selectedYojna)
+                    ?.sampatti_sreni_list.map((sreni) => (
+                      <option key={sreni} value={sreni}>
+                        {sreni}
+                      </option>
+                    ))}
                 </select>
                 <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               </div>
+            )}
 
-              {selectedYojna && (
-                <div className="relative">
-                  <select
-                    value={selectedSampattiSreni}
-                    onChange={(e) => setSelectedSampattiSreni(e.target.value)}
-                    className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg"
-                  >
-                    <option value="">All Sampatti Sreni</option>
-                    {yojnas
-                      .find((y) => y.yojna_id === selectedYojna)
-                      ?.sampatti_sreni_list.map((sreni) => (
-                        <option key={sreni} value={sreni}>
-                          {sreni}
-                        </option>
-                      ))}
-                  </select>
-                  <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                </div>
-              )}
-
-              <button
-                onClick={exportToExcel}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700"
+            <div className="relative">
+              <select
+                value={selectedFloorType}
+                onChange={(e) => setSelectedFloorType(e.target.value)}
+                className="min-w-[160px] pl-10 pr-4 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg"
               >
-                <Download className="h-5 w-5" />
-                <span>Export</span>
-              </button>
+                {floorTypes.map((floor) => (
+                  <option key={floor.value} value={floor.value}>
+                    {floor.label}
+                  </option>
+                ))}
+              </select>
+              <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             </div>
           </div>
         </div>
@@ -400,10 +429,9 @@ export const PropertyTable = ({ yojna_id }: { yojna_id: string }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {data.map((item) => (
               <tr
-              onClick={() => {
-                // navigate(`/property/${item.property_id}`);
-                window.open(`/property/${item.property_id}`)
-              }}
+                onClick={() => {
+                  window.open(`/property/${item.property_id}`);
+                }}
                 key={item.property_id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
               >
