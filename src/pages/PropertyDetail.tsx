@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Toaster } from "react-hot-toast";
 import BASE_URL from "../data/endpoint";
-import PropertyExportPDF from '../components/PropertyExportPDF';
+import PropertyExportPDF from "../components/PropertyExportPDF";
 
 interface TransferFormData {
   yojna_id: string;
@@ -19,17 +19,27 @@ interface TransferFormData {
   avanti_ka_vartaman_pata: string;
   mobile_no: string;
   kabja_dinank: string;
-  documentation_shulk: number;
+  documentation_shulk?: number; // For namantaran
+  mutation_charges?: number; // For namantaran
+  advertisement_charges?: number; // For varasat
+  miscellaneous_charges?: number; // Optional for varasat
   aadhar_number: string;
   aadhar_photo_link: string;
+  bainama_abhilekh?: string; // For namantaran
+  ketra_sapath_patra: string;
+  ketra_undertaking?: string; // For namantaran
+  vikreta_sapath_patra?: string; // For namantaran
+  mitriyu_praman_patra?: string; // For varasat
+  nikat_sambandhi_praman_patra?: string; // For varasat
+  pan_card: string;
   documents_link: string;
   abhiyookti: string;
 }
 
 export function PropertyDetail() {
-  const { property_id } = useParams(); // Get property_id from URL
+  const { property_id } = useParams();
   const navigate = useNavigate();
-  const [propertyData, setPropertyData] = useState(null); // To store the fetched property data
+  const [propertyData, setPropertyData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -38,10 +48,8 @@ export function PropertyDetail() {
     "namantaran"
   );
   const [formData, setFormData] = useState<TransferFormData>({
-    // yojna_id: propertyData?.propertyRecords[0].yojna_id,
-    // property_id: property_id,
     transfer_type: "namantaran",
-    from_user_id: 1, // You might want to get this from your auth context
+    from_user_id: 1,
     relationship: null,
     avanti_ka_naam: "",
     pita_pati_ka_naam: "",
@@ -50,23 +58,31 @@ export function PropertyDetail() {
     mobile_no: "",
     kabja_dinank: new Date().toISOString().split("T")[0],
     documentation_shulk: 0,
+    mutation_charges: 0,
+    advertisement_charges: 0,
+    miscellaneous_charges: 0,
     aadhar_number: "",
     aadhar_photo_link: "",
+    bainama_abhilekh: "",
+    ketra_sapath_patra: "",
+    ketra_undertaking: "",
+    vikreta_sapath_patra: "",
+    mitriyu_praman_patra: "",
+    nikat_sambandhi_praman_patra: "",
+    pan_card: "",
     documents_link: "",
     abhiyookti: "",
   });
 
-  // Fetch property details on component mount
   useEffect(() => {
     const fetchPropertyDetails = async () => {
       try {
         setLoading(true);
         const response = await fetch(`${BASE_URL}/properties/${property_id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming token is stored in localStorage
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-
 
         if (!response.ok) {
           throw new Error("Failed to fetch property details");
@@ -90,9 +106,9 @@ export function PropertyDetail() {
       ...formData,
       yojna_id: propertyData.propertyRecords[0].yojna_id,
       property_id,
-    }
+    };
 
-    console.log(payload)
+    console.log(payload);
     // try {
     //   const response = await fetch(`${BASE_URL}/properties/transfer`, {
     //     method: "POST",
@@ -111,7 +127,6 @@ export function PropertyDetail() {
 
     //   toast.success("Property transferred successfully");
     //   setIsTransferModalOpen(false);
-    //   // Refresh the page or refetch property data
     //   window.location.reload();
     // } catch (error) {
     //   toast.error("Failed to transfer property");
@@ -155,11 +170,8 @@ export function PropertyDetail() {
     );
   }
 
-  // Get the current owner (last element in propertyRecords)
   const currentOwner =
     propertyData.propertyRecords[propertyData.propertyRecords.length - 1];
-
-  // Reverse propertyRecords to show current owner to oldest owner
   const ownershipHistory = [...propertyData.propertyRecords].reverse();
 
   const handleEdit = () => {
@@ -170,26 +182,19 @@ export function PropertyDetail() {
     <DashboardLayout>
       <Toaster position="top-right" />
       <div className="p-6 max-w-7xl mx-auto">
-        {/* Property ID and Yojna Name Header */}
-        {/* <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-2xl font-bold text-white mb-2">
-            संपत्ति संख्या: {property_id}
-          </h1>
-          <p className="text-blue-100">
-            {propertyData.propertyRecords[0].yojna_name}
-          </p>
-        </div> */}
-        {/* Property ID and Yojna Name Header with Edit Button */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg shadow-lg p-6 mb-6 relative">
+        <div className="bg-gradient-to-r from-indigo-900 to-indigo-600 rounded-lg shadow-lg p-6 mb-6 relative flex justify-between">
+          <div>
+            <h1 className="text-2xl text-white font-bold mb-2">
+              योजना: {propertyData.propertyRecords[0].yojna_name}
+            </h1>
+            <p className="text-white">
+              <span className="font-semibold">संपत्ति श्रेणी</span> -
+              {propertyData.propertyRecordDetail.sampatti_sreni}
+              <span className="font-semibold">, संपत्ति संख्या:</span>{" "}
+              {propertyData.propertyRecordDetail.avanti_sampatti_sankhya}
+            </p>
+          </div>
           <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-2">
-                संपत्ति संख्या: {property_id}
-              </h1>
-              <p className="text-blue-100">
-                {propertyData.propertyRecords[0].yojna_name}
-              </p>
-            </div>
             <button
               onClick={() => handleEdit()}
               className="bg-white text-blue-600 hover:bg-blue-50 font-medium rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-white transition-colors"
@@ -206,14 +211,13 @@ export function PropertyDetail() {
               <Plus />
             </button>
 
-            <PropertyExportPDF 
-              propertyData={propertyData} 
-              propertyId={property_id} 
+            <PropertyExportPDF
+              propertyData={propertyData}
+              propertyId={property_id}
             />
           </div>
         </div>
 
-        {/* Current Owner Basic Details */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -279,7 +283,6 @@ export function PropertyDetail() {
           </div>
         </div>
 
-        {/* Property Details */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -345,7 +348,6 @@ export function PropertyDetail() {
           </div>
         </div>
 
-        {/* Financial Details */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -363,7 +365,9 @@ export function PropertyDetail() {
                   {propertyData.propertyRecordDetail.panjikaran_dhanrashi}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">पंजीकरण दिनांक:</span>{" "}
+                  <span className="font-semibold min-w-40">
+                    पंजीकरण दिनांक:
+                  </span>{" "}
                   {propertyData.propertyRecordDetail.panjikaran_dinank ||
                     "उपलब्ध नहीं"}
                 </p>
@@ -497,7 +501,6 @@ export function PropertyDetail() {
           </div>
         </div>
 
-        {/* Installment Plan */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -582,7 +585,6 @@ export function PropertyDetail() {
           </div>
         </div>
 
-        {/* Installments */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -687,7 +689,6 @@ export function PropertyDetail() {
           )}
         </div>
 
-        {/* Service Charges */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -758,7 +759,6 @@ export function PropertyDetail() {
           )}
         </div>
 
-        {/* Ownership History Table */}
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -846,6 +846,9 @@ export function PropertyDetail() {
                         ...prev,
                         transfer_type: "namantaran",
                         relationship: null,
+                        advertisement_charges: 0,
+                        mitriyu_praman_patra: "",
+                        nikat_sambandhi_praman_patra: "",
                       }));
                     }}
                   >
@@ -863,6 +866,11 @@ export function PropertyDetail() {
                         ...prev,
                         transfer_type: "varasat",
                         relationship: "",
+                        documentation_shulk: 0,
+                        mutation_charges: 0,
+                        bainama_abhilekh: "",
+                        ketra_undertaking: "",
+                        vikreta_sapath_patra: "",
                       }));
                     }}
                   >
@@ -877,6 +885,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_naam}
                       onChange={(e) =>
@@ -894,6 +903,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.pita_pati_ka_naam}
                       onChange={(e) =>
@@ -912,6 +922,7 @@ export function PropertyDetail() {
                       </label>
                       <input
                         type="text"
+                        required
                         className="w-full p-2 border rounded-lg"
                         value={formData.relationship || ""}
                         onChange={(e) =>
@@ -930,6 +941,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_sthayi_pata}
                       onChange={(e) =>
@@ -947,6 +959,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_vartaman_pata}
                       onChange={(e) =>
@@ -964,6 +977,8 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
+                      pattern="[0-9]{10}"
                       className="w-full p-2 border rounded-lg"
                       value={formData.mobile_no}
                       onChange={(e) =>
@@ -978,6 +993,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="date"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.kabja_dinank}
                       onChange={(e) =>
@@ -989,18 +1005,79 @@ export function PropertyDetail() {
                     />
                   </div>
 
+                  {transferType === "namantaran" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          दस्तावेजीकरण शुल्क
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.documentation_shulk}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              documentation_shulk: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          उत्परिवर्तन शुल्क
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.mutation_charges}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              mutation_charges: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {transferType === "varasat" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        विज्ञापन शुल्क
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        className="w-full p-2 border rounded-lg"
+                        value={formData.advertisement_charges}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            advertisement_charges: parseFloat(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      दस्तावेजीकरण शुल्क
+                      विविध शुल्क
                     </label>
                     <input
                       type="number"
+                      required={transferType === "namantaran"}
                       className="w-full p-2 border rounded-lg"
-                      value={formData.documentation_shulk}
+                      value={formData.miscellaneous_charges}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          documentation_shulk: parseFloat(e.target.value),
+                          miscellaneous_charges: parseFloat(e.target.value),
                         })
                       }
                     />
@@ -1012,6 +1089,8 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
+                      pattern="[0-9]{12}"
                       className="w-full p-2 border rounded-lg"
                       value={formData.aadhar_number}
                       onChange={(e) =>
@@ -1029,6 +1108,7 @@ export function PropertyDetail() {
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.aadhar_photo_link}
                       onChange={(e) =>
@@ -1040,12 +1120,166 @@ export function PropertyDetail() {
                     />
                   </div>
 
+                  {transferType === "namantaran" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          बैनामा अभिलेख लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.bainama_abhilekh}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              bainama_abhilekh: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्षेत्र सपथ पत्र लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.ketra_sapath_patra}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ketra_sapath_patra: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्षेत्र अंडरटेकिंग लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.ketra_undertaking}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ketra_undertaking: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          विक्रेता सपथ पत्र लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.vikreta_sapath_patra}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              vikreta_sapath_patra: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {transferType === "varasat" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्षेत्र सपथ पत्र लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.ketra_sapath_patra}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ketra_sapath_patra: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          मृत्यु प्रमाण पत्र लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.mitriyu_praman_patra}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              mitriyu_praman_patra: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          निकट संबंधी प्रमाण पत्र लिंक
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.nikat_sambandhi_praman_patra}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              nikat_sambandhi_praman_patra: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      पैन कार्ड
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                      className="w-full p-2 border rounded-lg"
+                      value={formData.pan_card}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          pan_card: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       दस्तावेज लिंक
                     </label>
                     <input
                       type="text"
+                      required
                       className="w-full p-2 border rounded-lg"
                       value={formData.documents_link}
                       onChange={(e) =>
@@ -1062,6 +1296,7 @@ export function PropertyDetail() {
                       अभियुक्ति
                     </label>
                     <textarea
+                      required
                       className="w-full p-2 border rounded-lg"
                       rows={3}
                       value={formData.abhiyookti}

@@ -10,7 +10,6 @@ import {
   Home,
 } from "lucide-react";
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import TransactionHistory from "../components/TransactionHistory/TransactionHistory";
 
 const schemeDistribution = [
   { name: "Housing", value: 8 },
@@ -27,6 +26,7 @@ import { MonthlyRevenue } from "../components/dashboard/MonthlyRevenue";
 import { DefaulterAnalysis } from "../components/analytics/DefaulterAnalysis";
 import { SchemePerformance } from "../components/analytics/SchemePerformance";
 import DashboardStats from "../components/dashboard/DashboardStats";
+import RecentTransaction from "../components/TransactionHistory/RecentTransactions";
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -47,7 +47,7 @@ export function Dashboard() {
         <DashboardStats />
 
         <div className="mt-[20px]">
-          <TransactionHistory />
+          <RecentTransaction />
         </div>
         {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ">
           <StatsCard

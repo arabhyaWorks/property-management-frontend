@@ -27,10 +27,10 @@ import ServiceCharges from "./alottee/pages/ServiceCharge";
 import EMIPayment from "./alottee/pages/EMIPayment";
 import Profile from "./alottee/pages/Profile";
 import PaymentCounter from "./pages/PaymentCounter";
+import PaymentCounterPropertyDetail from "./pages/PaymentCounterPropertyDetail";
+import PaymentCounterEMIPayment from "./counter/PaymentCounterEmiPayment";
+import PaymentCounterServiceCharges from "./counter/PaymentCounterServiceCharge";
 
-// Implementation of Edit, namantaran and varasat from now on
-// property_management_dev
-// This is the version of the property management system frontend as we are going to implement major changes in the database structure and the functionality to implement varasat, namantaran, logs, etc. we are going to change the database itself and shift to new database.
 
 export default function App() {
   return (
@@ -59,7 +59,7 @@ export default function App() {
                 element={<EditProperty />}
               />
               <Route path="/AddProperty" element={<CreateNewProperty />} />
-              <Route path="/payment-counter" element={<PaymentCounter />} />
+         
               <Route path="/users" element={<Users />} />
               <Route path="/payment-details" element={<PaymentDetails />} />
               <Route path="/settings" element={<Settings />} />
@@ -72,6 +72,14 @@ export default function App() {
               <Route path="/alottee/profile" element={<Profile />} />
 
 
+              {/* Payment Counter */}
+              <Route path="/payment-counter" element={<PaymentCounter />} />
+              <Route path="/payment-counter/:property_id" element={<PaymentCounterPropertyDetail />} />
+              <Route path="/payment-counter/:property_id" element={<PaymentCounterPropertyDetail />} />
+              <Route path="/payment-counter/property/pay-emi" element={<PaymentCounterEMIPayment />} />
+              <Route path="/payment-counter/property/service-charges" element={<PaymentCounterServiceCharges />} />
+
+
 
               {/* </Route> */}
             </Routes>
@@ -81,20 +89,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
-// export default function App() {
-//   return (
-//     <ThemeProvider>
-//       <LanguageProvider>
-//         <AuthProvider>
-//           <BrowserRouter>
-//             <Routes>
-//               {/* <Route path="/" element={<App />} /> */}
-//               <Route path="/" element={<PaymentForm />} />
-//             </Routes>
-//           </BrowserRouter>
-//         </AuthProvider>
-//       </LanguageProvider>
-//     </ThemeProvider>
-//   );
-// }

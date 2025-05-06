@@ -4,7 +4,7 @@ import Pagination from "./Pagination";
 import { fetchTransactions } from "../../services/api";
 import { Loader2 } from "lucide-react";
 
-const TransactionHistory = () => {
+const RecentTransaction = () => {
   const [transactions, setTransactions] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -63,18 +63,18 @@ const TransactionHistory = () => {
         <h2 className="text-xl font-semibold text-gray-800">
           Recent Transactions
         </h2>
-        <span className="text-sm text-gray-500">
+        {/* <span className="text-sm text-gray-500">
           Showing {transactions.length} of {pagination.totalRecords} transactions
-        </span>
+        </span> */}
       </div>
 
-      {pagination.totalPages > 1 && (
+      {/* {pagination.totalPages > 1 && (
         <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
           onPageChange={handlePageChange}
         />
-      )}
+      )} */}
 
       {transactions.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
@@ -91,15 +91,15 @@ const TransactionHistory = () => {
         </div>
       )}
 
-      {pagination.totalPages > 1 && (
+      {/* {pagination.totalPages > 1 && (
         <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
           onPageChange={handlePageChange}
         />
-      )}
+      )} */}
     </div>
   );
 };
 
-export default TransactionHistory;
+export default RecentTransaction;

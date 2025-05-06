@@ -31,6 +31,7 @@ export function Sidebar() {
 
   const handleLogout = () => {
     logout();
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -101,7 +102,7 @@ export function Sidebar() {
           
 
           <NavLink
-            to="/settings"
+            to="/payment-counter"
             className={({ isActive }) =>
               cn(
                 'flex items-center space-x-3 p-3 rounded-lg transition-colors',
@@ -110,8 +111,9 @@ export function Sidebar() {
               )
             }
           >
-            <Settings className="h-5 w-5" />
-            {!isCollapsed && <span>{t('settings')}</span>}
+          <Calculator className="h-5 w-5" />
+          {!isCollapsed && <span>Payment Counter</span>
+            }
           </NavLink>
 
           <SidebarSchemeList isCollapsed={isCollapsed} />
@@ -137,30 +139,8 @@ export function Sidebar() {
           "absolute bottom-0 left-0 right-0 p-4 border-t border-blue-700 space-y-2",
           isCollapsed ? "text-center" : ""
         )}>
-          <button
-            onClick={() => setShowPaymentCounter(true)}
-            className={cn(
-              "flex items-center w-full p-3 rounded-lg text-white hover:bg-blue-700/50 transition-colors",
-              isCollapsed ? "justify-center" : "space-x-3"
-            )}
-          >
-            <Calculator className="h-5 w-5" />
-            {!isCollapsed && <span>Payment Counter</span>}
-          </button>
+       
 
-          <a
-            href="https://play.google.com/store"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              "flex items-center p-3 rounded-lg text-white hover:bg-blue-700/50 transition-colors",
-              isCollapsed ? "justify-center" : "space-x-3"
-            )}
-          >
-            <PlayCircle className="h-5 w-5" />
-            {!isCollapsed && <span>{t('downloadApp')}</span>}
-          </a>
-          
           <button
             onClick={handleLogout}
             className={cn(

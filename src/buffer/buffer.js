@@ -1,4 +1,4 @@
-const payload1 = {
+const namantaran = {
     "transfer_type": "namantaran",
     "from_user_id": 1,
     "relationship": null,
@@ -9,11 +9,8 @@ const payload1 = {
     "mobile_no": "9453269956",
     "kabja_dinank": "2025-05-05",
     "documentation_shulk": 12000,
-    // 
     "mutation_charges": 2000.00,
     "miscellaneous_charges": 1000.00,
-    "advertisement_charges": 500.00,
-    // 
     "aadhar_number": "945326995612",
     "aadhar_photo_link": "",
     "bainama_abhilekh": "https://example.com/bainama.jpg",
@@ -21,8 +18,6 @@ const payload1 = {
     "ketra_undertaking": "https://example.com/undertaking.jpg",
     "vikreta_sapath_patra": "https://example.com/vikreta.jpg",
     "pan_card": "ABCDE1234F",
-    "mitriyu_praman_patra": "https://example.com/death_certificate.jpg",
-    "nikat_sambandhi_praman_patra": "https://example.com/relationship_certificate.jpg",
     "documents_link": "https://example.com/doc.pdf",
     "documents_link": "",
     "abhiyookti": "",
@@ -31,7 +26,7 @@ const payload1 = {
 }
 
 
-const payload2 = {
+const varasat = {
     "yojna_id": "BID",
     "property_id": "BID-20250411164946",
     "transfer_type": "namantaran",
@@ -43,15 +38,11 @@ const payload2 = {
     "avanti_ka_vartaman_pata": "Current Address, City",
     "mobile_no": "9876543210",
     "kabja_dinank": "2025-05-06",
-    "documentation_shulk": 5000.00,
-    "mutation_charges": 2000.00,
-    "miscellaneous_charges": 1000.00,
     "advertisement_charges": 500.00,
+    "miscellaneous_charges": 1000.00,
     "aadhar_number": "123456789012",
     "aadhar_photo_link": "https://example.com/aadhar.jpg",
-    "bainama_abhilekh": "https://example.com/bainama.jpg",
     "ketra_sapath_patra": "https://example.com/ketra.jpg",
-    "vikreta_sapath_patra": "https://example.com/vikreta.jpg",
     "pan_card": "ABCDE1234F",
     "mitriyu_praman_patra": "https://example.com/death_certificate.jpg",
     "nikat_sambandhi_praman_patra": "https://example.com/relationship_certificate.jpg",
