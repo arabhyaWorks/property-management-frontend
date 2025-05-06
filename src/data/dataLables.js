@@ -376,7 +376,7 @@ const dataKeys = {
 
     "yojna_name",
     // "property_id",
-    // "transfer_type",
+    "transfer_type",
     // "from_user_id",
     // "user_id",
     // "previous_record_id",

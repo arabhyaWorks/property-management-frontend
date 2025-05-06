@@ -26,6 +26,7 @@ import PropertyDetails from "./alottee/pages/PropertyDetails";
 import ServiceCharges from "./alottee/pages/ServiceCharge";
 import EMIPayment from "./alottee/pages/EMIPayment";
 import Profile from "./alottee/pages/Profile";
+import PaymentCounter from "./pages/PaymentCounter";
 
 // Implementation of Edit, namantaran and varasat from now on
 // property_management_dev
@@ -58,6 +59,7 @@ export default function App() {
                 element={<EditProperty />}
               />
               <Route path="/AddProperty" element={<CreateNewProperty />} />
+              <Route path="/payment-counter" element={<PaymentCounter />} />
               <Route path="/users" element={<Users />} />
               <Route path="/payment-details" element={<PaymentDetails />} />
               <Route path="/settings" element={<Settings />} />

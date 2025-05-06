@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Plus, Search, Mail, Phone } from 'lucide-react';
-import { useTranslation } from '../hooks/useTranslation';
-import { useEffect } from 'react';
-import BASE_URL from '../data/endpoint';
-import { toast } from 'react-hot-toast';
-import { CreateUserModal } from '../components/users/CreateUserModal';
+import React, { useState } from "react";
+import { DashboardLayout } from "../components/layout/DashboardLayout";
+import { Plus, Search, Mail, Phone } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
+import { useEffect } from "react";
+import BASE_URL from "../data/endpoint";
+import { toast } from "react-hot-toast";
+import { CreateUserModal } from "../components/users/CreateUserModal";
 
 interface User {
   id: number;
@@ -17,7 +17,7 @@ interface User {
 
 export function Users() {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,33 +26,36 @@ export function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${BASE_URL}/api/users?role_type=non-allottee`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${BASE_URL}/api/users?role_type=non-allottee`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch users');
+          throw new Error("Failed to fetch users");
         }
 
         const data = await response.json();
         setUsers(data.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching users:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch users');
+        console.error("Error fetching users:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch users");
         setLoading(false);
-        toast.error('Failed to fetch users');
+        toast.error("Failed to fetch users");
       }
     };
 
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user =>
-    Object.values(user).some(value =>
+  const filteredUsers = users.filter((user) =>
+    Object.values(user).some((value) =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -70,9 +73,7 @@ export function Users() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-8 text-center text-red-600">
-          {error}
-        </div>
+        <div className="p-8 text-center text-red-600">{error}</div>
       </DashboardLayout>
     );
   }
@@ -82,8 +83,12 @@ export function Users() {
       <div className="p-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Users</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage system users and their access</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Users
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage system users and their access
+            </p>
           </div>
 
           <button
@@ -102,22 +107,25 @@ export function Users() {
               // Refresh the users list after successful creation
               const fetchUsers = async () => {
                 try {
-                  const token = localStorage.getItem('token');
-                  const response = await fetch(`${BASE_URL}/api/users?role_type=non-allottee`, {
-                    headers: {
-                      'Authorization': `Bearer ${token}`
+                  const token = localStorage.getItem("token");
+                  const response = await fetch(
+                    `${BASE_URL}/api/users?role_type=non-allottee`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
                     }
-                  });
+                  );
 
                   if (!response.ok) {
-                    throw new Error('Failed to fetch users');
+                    throw new Error("Failed to fetch users");
                   }
 
                   const data = await response.json();
                   setUsers(data.data);
                 } catch (err) {
-                  console.error('Error fetching users:', err);
-                  toast.error('Failed to refresh users list');
+                  console.error("Error fetching users:", err);
+                  toast.error("Failed to refresh users list");
                 }
               };
               fetchUsers();
@@ -155,14 +163,17 @@ export function Users() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Role
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredUsers.map((user, index) => (
-                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {index + 1}
                     </td>
@@ -185,7 +196,7 @@ export function Users() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                         <Mail className="h-4 w-4 mr-2" />
-                        {user.email || '-'}
+                        {user.email || "-"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -194,10 +205,11 @@ export function Users() {
                         {user.mobile_number}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                        Edit
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm">
+                      <p className="dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                        {user.role.slice(0, 1).toUpperCase() +
+                          user.role.slice(1)}
+                      </p>
                     </td>
                   </tr>
                 ))}

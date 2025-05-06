@@ -91,30 +91,32 @@ export function PropertyDetail() {
       yojna_id: propertyData.propertyRecords[0].yojna_id,
       property_id,
     }
-    try {
-      const response = await fetch(`${BASE_URL}/properties/transfer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
 
-      console.log(formData);
+    console.log(payload)
+    // try {
+    //   const response = await fetch(`${BASE_URL}/properties/transfer`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //     },
+    //     body: JSON.stringify(payload),
+    //   });
 
-      if (!response.ok) {
-        throw new Error("Transfer failed");
-      }
+    //   console.log(formData);
 
-      toast.success("Property transferred successfully");
-      setIsTransferModalOpen(false);
-      // Refresh the page or refetch property data
-      window.location.reload();
-    } catch (error) {
-      toast.error("Failed to transfer property");
-      console.error("Transfer error:", error);
-    }
+    //   if (!response.ok) {
+    //     throw new Error("Transfer failed");
+    //   }
+
+    //   toast.success("Property transferred successfully");
+    //   setIsTransferModalOpen(false);
+    //   // Refresh the page or refetch property data
+    //   window.location.reload();
+    // } catch (error) {
+    //   toast.error("Failed to transfer property");
+    //   console.error("Transfer error:", error);
+    // }
   };
 
   if (loading) {

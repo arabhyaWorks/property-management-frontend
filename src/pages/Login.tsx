@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Phone, Lock, ChevronLeft, User } from 'lucide-react';
+import { Building2, Phone, Lock, ChevronLeft, User, Mail, Eye, EyeOff } from 'lucide-react';
 import newBaseEndpoint from '../services/enpoints';
 
 export function Login() {
   const [userType, setUserType] = useState('allottee'); // 'allottee' or 'admin'
   const [mobileNumber, setMobileNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
 
@@ -98,8 +100,8 @@ export function Login() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    if (!mobileNumber || !password) {
-      setErrorMessage('Please enter both mobile number and password');
+    if (!email || !password) {
+      setErrorMessage('Please enter both email and password');
       return;
     }
 
@@ -113,7 +115,7 @@ export function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          mobile_number: mobileNumber,
+          email: email,
           password: password 
         }),
       });
@@ -122,11 +124,14 @@ export function Login() {
 
       if (response.ok && data.token) {
         // Store admin credentials
-        localStorage.setItem('mobileNumber', mobileNumber);
         localStorage.setItem('token', data.token);
+        localStorage.setItem('email', email);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('name', data.name);
+        localStorage.setItem('userId', data.user_id);
         navigate('/dashboard');
       } else {
-        setErrorMessage(data.message || 'Invalid credentials. Please check your mobile number and password.');
+        setErrorMessage(data.message || 'Invalid credentials. Please check your email and password.');
       }
     } catch (error) {
       setErrorMessage('Network error. Please check your connection and try again.');
@@ -245,22 +250,22 @@ export function Login() {
     return (
       <form onSubmit={handleAdminLogin} className="space-y-6">
         <div>
-          <label htmlFor="admin_mobile" className="block text-sm font-medium text-gray-700 mb-1">
-            Mobile Number
+          <label htmlFor="admin_email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Phone className="h-5 w-5 text-gray-400" />
+              <Mail className="h-5 w-5 text-gray-400" />
             </div>
             <input
-              id="admin_mobile"
-              name="admin_mobile"
-              type="tel"
+              id="admin_email"
+              name="admin_email"
+              type="email"
               required
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter your mobile number"
+              placeholder="Enter your email"
             />
           </div>
         </div>
@@ -276,13 +281,24 @@ export function Login() {
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter your password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
           </div>
         </div>
 
