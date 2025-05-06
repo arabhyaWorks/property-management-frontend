@@ -109,29 +109,29 @@ export function PropertyDetail() {
     };
 
     console.log(payload);
-    // try {
-    //   const response = await fetch(`${BASE_URL}/properties/transfer`, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //     },
-    //     body: JSON.stringify(payload),
-    //   });
+    try {
+      const response = await fetch(`${BASE_URL}/properties/transfer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    //   console.log(formData);
+      console.log(formData);
 
-    //   if (!response.ok) {
-    //     throw new Error("Transfer failed");
-    //   }
+      if (!response.ok) {
+        throw new Error("Transfer failed");
+      }
 
-    //   toast.success("Property transferred successfully");
-    //   setIsTransferModalOpen(false);
-    //   window.location.reload();
-    // } catch (error) {
-    //   toast.error("Failed to transfer property");
-    //   console.error("Transfer error:", error);
-    // }
+      toast.success("Property transferred successfully");
+      setIsTransferModalOpen(false);
+      window.location.reload();
+    } catch (error) {
+      toast.error("Failed to transfer property");
+      console.error("Transfer error:", error);
+    }
   };
 
   if (loading) {
@@ -318,7 +318,7 @@ export function PropertyDetail() {
                   {propertyData.propertyRecordDetail.property_floor_type}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">क्षेत्रफल:</span>{" "}
+                  <span className="font-semibold min-w-40">क्रेताफल:</span>{" "}
                   {propertyData.propertyRecordDetail.kshetrafal ||
                     "उपलब्ध नहीं"}
                 </p>
@@ -987,29 +987,28 @@ export function PropertyDetail() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      कब्जा दिनांक
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      className="w-full p-2 border rounded-lg"
-                      value={formData.kabja_dinank}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          kabja_dinank: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
                   {transferType === "namantaran" && (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          दस्तावेजीकरण शुल्क
+                          नामांतरण दिनांक
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.kabja_dinank}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              kabja_dinank: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          डाक्युमेंटेशन चार्ज
                         </label>
                         <input
                           type="number"
@@ -1027,7 +1026,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          उत्परिवर्तन शुल्क
+                          म्यूटेशन चार्ज
                         </label>
                         <input
                           type="number"
@@ -1047,6 +1046,23 @@ export function PropertyDetail() {
 
                   {transferType === "varasat" && (
                     <div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          वरासत दिनांक
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          className="w-full p-2 border rounded-lg"
+                          value={formData.kabja_dinank}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              kabja_dinank: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         विज्ञापन शुल्क
                       </label>
@@ -1067,7 +1083,7 @@ export function PropertyDetail() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      विविध शुल्क
+                      मिसेलेनियस चार्ज
                     </label>
                     <input
                       type="number"
@@ -1142,7 +1158,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्षेत्र सपथ पत्र लिंक
+                          क्रेता सपथ पत्र लिंक
                         </label>
                         <input
                           type="text"
@@ -1160,7 +1176,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्षेत्र अंडरटेकिंग लिंक
+                          क्रेता अंडरटेकिंग लिंक
                         </label>
                         <input
                           type="text"
@@ -1200,7 +1216,7 @@ export function PropertyDetail() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्षेत्र सपथ पत्र लिंक
+                          क्रेता सपथ पत्र लिंक
                         </label>
                         <input
                           type="text"
