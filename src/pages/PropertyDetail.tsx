@@ -7,6 +7,14 @@ import { Toaster } from "react-hot-toast";
 import BASE_URL from "../data/endpoint";
 import PropertyExportPDF from "../components/PropertyExportPDF";
 
+const formatDateToDDMMYYYY = (dateString: string): string | null => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 interface TransferFormData {
   yojna_id: string;
   property_id: string;
@@ -19,20 +27,21 @@ interface TransferFormData {
   avanti_ka_vartaman_pata: string;
   mobile_no: string;
   kabja_dinank: string;
+  transfer_date: string;
   documentation_shulk?: number; // For namantaran
   mutation_charges?: number; // For namantaran
   advertisement_charges?: number; // For varasat
   miscellaneous_charges?: number; // Optional for varasat
   aadhar_number: string;
-  aadhar_photo_link: string;
-  bainama_abhilekh?: string; // For namantaran
-  ketra_sapath_patra: string;
-  ketra_undertaking?: string; // For namantaran
-  vikreta_sapath_patra?: string; // For namantaran
-  mitriyu_praman_patra?: string; // For varasat
-  nikat_sambandhi_praman_patra?: string; // For varasat
-  pan_card: string;
-  documents_link: string;
+  aadhar_photo_link: string; // file upload png upload
+  bainama_abhilekh?: string; // pdf upload
+  ketra_sapath_patra: string;// pdf upload
+  ketra_undertaking?: string; // For namantaran // pdf upload
+  vikreta_sapath_patra?: string; // For namantaran // pdf upload
+  mitriyu_praman_patra?: string; // For varasat // pdf upload
+  nikat_sambandhi_praman_patra?: string; // For varasat // pdf upload
+  pan_card: string; // pdf upload
+  documents_link: string; // pdf upload
   abhiyookti: string;
 }
 
@@ -56,7 +65,9 @@ export function PropertyDetail() {
     avanti_ka_sthayi_pata: "",
     avanti_ka_vartaman_pata: "",
     mobile_no: "",
-    kabja_dinank: new Date().toISOString().split("T")[0],
+    // kabja_dinank: new Date().toISOString().split("T")[0],
+    transfer_date: new Date().toISOString().split("T")[0],
+    kabja_dinank: "",
     documentation_shulk: 0,
     mutation_charges: 0,
     advertisement_charges: 0,
@@ -89,7 +100,7 @@ export function PropertyDetail() {
         }
 
         const data = await response.json();
-        console.log(data);
+        console.log("This is property data:", data);
         setPropertyData(data);
       } catch (err) {
         setError(err.message);
@@ -222,7 +233,7 @@ export function PropertyDetail() {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
             <h2 className="text-xl font-semibold text-blue-700">
-              वर्तमान मालिक की मूल जानकारी
+              वर्तमान आवंटी का विवरण
             </h2>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
@@ -318,12 +329,38 @@ export function PropertyDetail() {
                   {propertyData.propertyRecordDetail.property_floor_type}
                 </p>
                 <p className="flex">
-                  <span className="font-semibold min-w-40">क्रेताफल:</span>{" "}
+                  <span className="font-semibold min-w-40">क्षेत्रफल:</span>{" "}
                   {propertyData.propertyRecordDetail.kshetrafal ||
                     "उपलब्ध नहीं"}
                 </p>
               </div>
               <div className="flex flex-col space-y-2">
+                <p className="flex">
+                  <span className="font-semibold min-w-40">कब्जा दिनांक:</span>{" "}
+                  {currentOwner.kabja_dinank || "उपलब्ध नहीं"}
+                </p>
+                <p className="flex">
+                  {/* <span className="font-semibold min-w-40">कब्जा दिनांक:</span>{" "} */}
+                  <span className="font-semibold min-w-40">
+                    {propertyData.propertyRecords[
+                      propertyData.propertyRecords.length - 2
+                    ].transfer_type === "namantaran"
+                      ? "नामांतरण "
+                      : "वरासत "}
+                    दिनांक:
+                  </span>{" "}
+                  {/* {propertyData.transfer_date ||
+                    "उपलब्ध नहीं"} */}
+                  {propertyData.propertyRecords[
+                    propertyData.propertyRecords.length - 2
+                  ].transfer_date
+                    ? formatDateToDDMMYYYY(
+                        propertyData.propertyRecords[
+                          propertyData.propertyRecords.length - 2
+                        ].transfer_date
+                      )
+                    : "उपलब्ध नहीं"}
+                </p>
                 <p className="flex">
                   <span className="font-semibold min-w-40">भवन निर्माण:</span>{" "}
                   {propertyData.propertyRecordDetail.bhavan_nirman}
@@ -801,8 +838,16 @@ export function PropertyDetail() {
                     <td className="py-3 px-4">{record.avanti_ka_naam}</td>
                     <td className="py-3 px-4">{record.pita_pati_ka_naam}</td>
                     <td className="py-3 px-4">{record.transfer_type}</td>
+                    {/* <td className="py-3 px-4">
+                      {record.transfer_type === "namantaran"
+                        ? "नामांतरण "
+                        : "वरासत "}
+                    </td> */}
                     <td className="py-3 px-4">
-                      {record.transfer_date || "उपलब्ध नहीं"}
+                      {/* {record.transfer_date || "उपलब्ध नहीं"} */}
+                      {record.transfer_date
+                        ? formatDateToDDMMYYYY(record.transfer_date)
+                        : "उपलब्ध नहीं"}
                     </td>
                     <td className="py-3 px-4">
                       {record.relationship || "उपलब्ध नहीं"}
@@ -997,11 +1042,11 @@ export function PropertyDetail() {
                           type="date"
                           required
                           className="w-full p-2 border rounded-lg"
-                          value={formData.kabja_dinank}
+                          value={formData.transfer_date}
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              kabja_dinank: e.target.value,
+                              transfer_date: e.target.value,
                             })
                           }
                         />
@@ -1054,11 +1099,11 @@ export function PropertyDetail() {
                           type="date"
                           required
                           className="w-full p-2 border rounded-lg"
-                          value={formData.kabja_dinank}
+                          value={formData.transfer_date}
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              kabja_dinank: e.target.value,
+                              transfer_date: e.target.value,
                             })
                           }
                         />
@@ -1120,7 +1165,7 @@ export function PropertyDetail() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      आधार फोटो लिंक
+                      आधार फोटो
                     </label>
                     <input
                       type="text"
@@ -1140,7 +1185,7 @@ export function PropertyDetail() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          बैनामा अभिलेख लिंक
+                          बैनामा अभिलेख
                         </label>
                         <input
                           type="text"
@@ -1158,7 +1203,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्रेता सपथ पत्र लिंक
+                          क्रेता सपथ पत्र
                         </label>
                         <input
                           type="text"
@@ -1176,7 +1221,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्रेता अंडरटेकिंग लिंक
+                          क्रेता अंडरटेकिंग
                         </label>
                         <input
                           type="text"
@@ -1194,7 +1239,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          विक्रेता सपथ पत्र लिंक
+                          विक्रेता सपथ पत्र
                         </label>
                         <input
                           type="text"
@@ -1216,7 +1261,7 @@ export function PropertyDetail() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          क्रेता सपथ पत्र लिंक
+                          क्रेता सपथ पत्र
                         </label>
                         <input
                           type="text"
@@ -1234,7 +1279,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          मृत्यु प्रमाण पत्र लिंक
+                          मृत्यु प्रमाण पत्र
                         </label>
                         <input
                           type="text"
@@ -1252,7 +1297,7 @@ export function PropertyDetail() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          निकट संबंधी प्रमाण पत्र लिंक
+                          निकट संबंधी प्रमाण पत्र
                         </label>
                         <input
                           type="text"
@@ -1291,7 +1336,7 @@ export function PropertyDetail() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      दस्तावेज लिंक
+                      दस्तावेज
                     </label>
                     <input
                       type="text"
