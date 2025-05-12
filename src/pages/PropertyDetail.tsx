@@ -6,6 +6,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Toaster } from "react-hot-toast";
 import BASE_URL from "../data/endpoint";
 import PropertyExportPDF from "../components/PropertyExportPDF";
+import ComingSoonModal from "../alottee/components/ComingSoonModal";
 
 const formatDateToDDMMYYYY = (dateString: string): string | null => {
   if (!dateString) return null;
@@ -53,7 +54,9 @@ export function PropertyDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [transferType, setTransferType] = useState<"namantaran" | "varasat">("namantaran");
+  const [transferType, setTransferType] = useState<"namantaran" | "varasat">(
+    "namantaran"
+  );
   const [formData, setFormData] = useState<TransferFormData>({
     transfer_type: "namantaran",
     from_user_id: 1,
@@ -98,6 +101,7 @@ export function PropertyDetail() {
         }
 
         const data = await response.json();
+        console.log("Property Data:", data);
         setPropertyData(data);
       } catch (err) {
         setError(err.message);
@@ -185,7 +189,6 @@ export function PropertyDetail() {
       console.error("Transfer error:", error);
     }
   };
-
 
   if (loading) {
     return (
@@ -838,6 +841,51 @@ export function PropertyDetail() {
           )}
         </div>
 
+        {/* Abhiyukti Section */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+            <h2 className="text-xl font-semibold text-blue-700">अभियुक्ति</h2>
+          </div>
+          {propertyData.abhiyukti && propertyData.abhiyukti.length > 0 ? (
+            <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+              <table className="min-w-full">
+                <thead className="bg-blue-200 border-b border-blue-200">
+                  <tr>
+                    <th className="py-3 px-4 text-left text-black">Sr. No</th>
+                    {/* <th className="py-3 px-4 text-left text-black">उपयोगकर्ता का नाम</th> */}
+                    {/* <th className="py-3 px-4 text-left text-black">भूमिका</th> */}
+                    {/* <th className="py-3 px-4 text-left text-black">संपत्ति रिकॉर्ड ID</th> */}
+                    {/* <th className="py-3 px-4 text-left text-black">निर्माण तिथि</th> */}
+                    <th className="py-3 px-4 text-left text-black">टिप्पणी</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-blue-100">
+                  {propertyData.abhiyukti.map(
+                    (item: Abhiyukti, index: number) => (
+                      <tr
+                        key={item.id}
+                        className={index % 2 === 0 ? "bg-white" : "bg-blue-50"}
+                      >
+                        <td className="py-3 px-4">{index + 1}.</td>
+                        {/* <td className="py-3 px-4">{item.user_name}</td> */}
+                        {/* <td className="py-3 px-4">{item.user_role}</td> */}
+                        {/* <td className="py-3 px-4">{item.property_record_id}</td> */}
+                        {/* <td className="py-3 px-4">{formatDateToDDMMYYYY(item.created_at)}</td> */}
+                        <td className="py-3 px-4">{item.comment}</td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-blue-200 p-4 rounded-lg text-blue-700 border border-blue-200">
+              कोई अभियुक्ति उपलब्ध नहीं है।
+            </div>
+          )}
+        </div>
+
         <div className="mb-6">
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -908,7 +956,9 @@ export function PropertyDetail() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">संपत्ति स्थानांतरण</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  संपत्ति स्थानांतरण
+                </h2>
                 <button
                   onClick={() => setIsTransferModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -967,74 +1017,101 @@ export function PropertyDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Text Inputs */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">आवंटी का नाम</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आवंटी का नाम
+                    </label>
                     <input
                       type="text"
                       required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_naam}
                       onChange={(e) =>
-                        setFormData({ ...formData, avanti_ka_naam: e.target.value })
+                        setFormData({
+                          ...formData,
+                          avanti_ka_naam: e.target.value,
+                        })
                       }
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">पिता/पति का नाम</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      पिता/पति का नाम
+                    </label>
                     <input
                       type="text"
                       required
                       className="w-full p-2 border rounded-lg"
                       value={formData.pita_pati_ka_naam}
                       onChange={(e) =>
-                        setFormData({ ...formData, pita_pati_ka_naam: e.target.value })
+                        setFormData({
+                          ...formData,
+                          pita_pati_ka_naam: e.target.value,
+                        })
                       }
                     />
                   </div>
 
                   {transferType === "varasat" && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">रिश्ता</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        रिश्ता
+                      </label>
                       <input
                         type="text"
                         required
                         className="w-full p-2 border rounded-lg"
                         value={formData.relationship || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, relationship: e.target.value })
+                          setFormData({
+                            ...formData,
+                            relationship: e.target.value,
+                          })
                         }
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">स्थायी पता</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      स्थायी पता
+                    </label>
                     <input
                       type="text"
                       required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_sthayi_pata}
                       onChange={(e) =>
-                        setFormData({ ...formData, avanti_ka_sthayi_pata: e.target.value })
+                        setFormData({
+                          ...formData,
+                          avanti_ka_sthayi_pata: e.target.value,
+                        })
                       }
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">वर्तमान पता</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      वर्तमान पता
+                    </label>
                     <input
                       type="text"
                       required
                       className="w-full p-2 border rounded-lg"
                       value={formData.avanti_ka_vartaman_pata}
                       onChange={(e) =>
-                        setFormData({ ...formData, avanti_ka_vartaman_pata: e.target.value })
+                        setFormData({
+                          ...formData,
+                          avanti_ka_vartaman_pata: e.target.value,
+                        })
                       }
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">मोबाइल नंबर</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      मोबाइल नंबर
+                    </label>
                     <input
                       type="text"
                       required
@@ -1050,19 +1127,26 @@ export function PropertyDetail() {
                   {transferType === "namantaran" && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">नामांतरण दिनांक</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          नामांतरण दिनांक
+                        </label>
                         <input
                           type="date"
                           required
                           className="w-full p-2 border rounded-lg"
                           value={formData.transfer_date}
                           onChange={(e) =>
-                            setFormData({ ...formData, transfer_date: e.target.value })
+                            setFormData({
+                              ...formData,
+                              transfer_date: e.target.value,
+                            })
                           }
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">डाक्युमेंटेशन चार्ज</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          डाक्युमेंटेशन चार्ज
+                        </label>
                         <input
                           type="number"
                           required
@@ -1077,7 +1161,9 @@ export function PropertyDetail() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">म्यूटेशन चार्ज</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          म्यूटेशन चार्ज
+                        </label>
                         <input
                           type="number"
                           required
@@ -1097,19 +1183,26 @@ export function PropertyDetail() {
                   {transferType === "varasat" && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">वरासत दिनांक</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          वरासत दिनांक
+                        </label>
                         <input
                           type="date"
                           required
                           className="w-full p-2 border rounded-lg"
                           value={formData.transfer_date}
                           onChange={(e) =>
-                            setFormData({ ...formData, transfer_date: e.target.value })
+                            setFormData({
+                              ...formData,
+                              transfer_date: e.target.value,
+                            })
                           }
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">विज्ञापन शुल्क</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          विज्ञापन शुल्क
+                        </label>
                         <input
                           type="number"
                           required
@@ -1127,7 +1220,9 @@ export function PropertyDetail() {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">मिसेलेनियस चार्ज</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      मिसेलेनियस चार्ज
+                    </label>
                     <input
                       type="number"
                       required={transferType === "namantaran"}
@@ -1143,7 +1238,9 @@ export function PropertyDetail() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">आधार नंबर</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आधार नंबर
+                    </label>
                     <input
                       type="text"
                       required
@@ -1151,22 +1248,35 @@ export function PropertyDetail() {
                       className="w-full p-2 border rounded-lg"
                       value={formData.aadhar_number}
                       onChange={(e) =>
-                        setFormData({ ...formData, aadhar_number: e.target.value })
+                        setFormData({
+                          ...formData,
+                          aadhar_number: e.target.value,
+                        })
                       }
                     />
                   </div>
 
                   {/* File Input for Aadhar Photo (PNG) */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">आधार फोटो (PNG, max 5MB)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      आधार फोटो (PNG, max 5MB)
+                    </label>
                     <input
                       type="file"
                       accept="image/png"
                       className="w-full p-2 border rounded-lg"
-                      onChange={(e) => handleFileUpload(e, "aadhar_photo_link", 5 * 1024 * 1024)}
+                      onChange={(e) =>
+                        handleFileUpload(
+                          e,
+                          "aadhar_photo_link",
+                          5 * 1024 * 1024
+                        )
+                      }
                     />
                     {formData.aadhar_photo_link && (
-                      <p className="text-sm text-green-600">Uploaded: {formData.aadhar_photo_link}</p>
+                      <p className="text-sm text-green-600">
+                        Uploaded: {formData.aadhar_photo_link}
+                      </p>
                     )}
                   </div>
 
@@ -1174,51 +1284,91 @@ export function PropertyDetail() {
                   {transferType === "namantaran" && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">बैनामा अभिलेख (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          बैनामा अभिलेख (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "bainama_abhilekh", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "bainama_abhilekh",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.bainama_abhilekh && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.bainama_abhilekh}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.bainama_abhilekh}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">क्रेता सपथ पत्र (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्रेता सपथ पत्र (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "ketra_sapath_patra", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "ketra_sapath_patra",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.ketra_sapath_patra && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.ketra_sapath_patra}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.ketra_sapath_patra}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">क्रेता अंडरटेकिंग (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्रेता अंडरटेकिंग (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border Rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "ketra_undertaking", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "ketra_undertaking",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.ketra_undertaking && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.ketra_undertaking}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.ketra_undertaking}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">विक्रेता सपथ पत्र (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          विक्रेता सपथ पत्र (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "vikreta_sapath_patra", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "vikreta_sapath_patra",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.vikreta_sapath_patra && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.vikreta_sapath_patra}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.vikreta_sapath_patra}
+                          </p>
                         )}
                       </div>
                     </>
@@ -1228,39 +1378,69 @@ export function PropertyDetail() {
                   {transferType === "varasat" && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">क्रेता सपथ पत्र (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          क्रेता सपथ पत्र (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "ketra_sapath_patra", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "ketra_sapath_patra",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.ketra_sapath_patra && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.ketra_sapath_patra}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.ketra_sapath_patra}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">मृत्यु प्रमाण पत्र (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          मृत्यु प्रमाण पत्र (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "mitriyu_praman_patra", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "mitriyu_praman_patra",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.mitriyu_praman_patra && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.mitriyu_praman_patra}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.mitriyu_praman_patra}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">निकट संबंधी प्रमाण पत्र (PDF, max 10MB)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          निकट संबंधी प्रमाण पत्र (PDF, max 10MB)
+                        </label>
                         <input
                           type="file"
                           accept="application/pdf"
                           className="w-full p-2 border rounded-lg"
-                          onChange={(e) => handleFileUpload(e, "nikat_sambandhi_praman_patra", 10 * 1024 * 1024)}
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e,
+                              "nikat_sambandhi_praman_patra",
+                              10 * 1024 * 1024
+                            )
+                          }
                         />
                         {formData.nikat_sambandhi_praman_patra && (
-                          <p className="text-sm text-green-600">Uploaded: {formData.nikat_sambandhi_praman_patra}</p>
+                          <p className="text-sm text-green-600">
+                            Uploaded: {formData.nikat_sambandhi_praman_patra}
+                          </p>
                         )}
                       </div>
                     </>
@@ -1268,35 +1448,49 @@ export function PropertyDetail() {
 
                   {/* File Input for PAN Card */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">पैन कार्ड (PDF, max 10MB)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      पैन कार्ड (PDF, max 10MB)
+                    </label>
                     <input
                       type="file"
                       accept="application/pdf"
                       className="w-full p-2 border rounded-lg"
-                      onChange={(e) => handleFileUpload(e, "pan_card", 10 * 1024 * 1024)}
+                      onChange={(e) =>
+                        handleFileUpload(e, "pan_card", 10 * 1024 * 1024)
+                      }
                     />
                     {formData.pan_card && (
-                      <p className="text-sm text-green-600">Uploaded: {formData.pan_card}</p>
+                      <p className="text-sm text-green-600">
+                        Uploaded: {formData.pan_card}
+                      </p>
                     )}
                   </div>
 
                   {/* File Input for Documents */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">दस्तावेज (PDF, max 10MB)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      दस्तावेज (PDF, max 10MB)
+                    </label>
                     <input
                       type="file"
                       accept="application/pdf"
                       className="w-full p-2 border rounded-lg"
-                      onChange={(e) => handleFileUpload(e, "documents_link", 10 * 1024 * 1024)}
+                      onChange={(e) =>
+                        handleFileUpload(e, "documents_link", 10 * 1024 * 1024)
+                      }
                     />
                     {formData.documents_link && (
-                      <p className="text-sm text-green-600">Uploaded: {formData.documents_link}</p>
+                      <p className="text-sm text-green-600">
+                        Uploaded: {formData.documents_link}
+                      </p>
                     )}
                   </div>
 
                   {/* Abhiyookti Textarea */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">अभियुक्ति</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      अभियुक्ति
+                    </label>
                     <textarea
                       required
                       className="w-full p-2 border rounded-lg"
