@@ -133,7 +133,7 @@ export function PropertyDetail() {
 
     setUploading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/file-upload", {
+      const response = await fetch(BASE_URL + "/api/file-upload", {
         method: "POST",
         body: uploadData,
       });
@@ -856,7 +856,7 @@ export function PropertyDetail() {
                     {/* <th className="py-3 px-4 text-left text-black">उपयोगकर्ता का नाम</th> */}
                     {/* <th className="py-3 px-4 text-left text-black">भूमिका</th> */}
                     {/* <th className="py-3 px-4 text-left text-black">संपत्ति रिकॉर्ड ID</th> */}
-                    {/* <th className="py-3 px-4 text-left text-black">निर्माण तिथि</th> */}
+                    <th className="py-3 px-4 text-left text-black">तिथि</th>
                     <th className="py-3 px-4 text-left text-black">टिप्पणी</th>
                   </tr>
                 </thead>
@@ -871,7 +871,9 @@ export function PropertyDetail() {
                         {/* <td className="py-3 px-4">{item.user_name}</td> */}
                         {/* <td className="py-3 px-4">{item.user_role}</td> */}
                         {/* <td className="py-3 px-4">{item.property_record_id}</td> */}
-                        {/* <td className="py-3 px-4">{formatDateToDDMMYYYY(item.created_at)}</td> */}
+                        <td className="py-3 px-4">
+                          {formatDateToDDMMYYYY(item.created_at)}
+                        </td>
                         <td className="py-3 px-4">{item.comment}</td>
                       </tr>
                     )
@@ -1274,9 +1276,7 @@ export function PropertyDetail() {
                       }
                     />
                     {formData.aadhar_photo_link && (
-                      <p className="text-sm text-green-600">
-                        Uploaded: {formData.aadhar_photo_link}
-                      </p>
+                      <p className="text-sm text-green-600">Uploaded</p>
                     )}
                   </div>
 
@@ -1300,9 +1300,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.bainama_abhilekh && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.bainama_abhilekh}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                       <div>
@@ -1322,9 +1320,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.ketra_sapath_patra && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.ketra_sapath_patra}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                       <div>
@@ -1344,9 +1340,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.ketra_undertaking && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.ketra_undertaking}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                       <div>
@@ -1366,9 +1360,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.vikreta_sapath_patra && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.vikreta_sapath_patra}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                     </>
@@ -1394,9 +1386,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.ketra_sapath_patra && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.ketra_sapath_patra}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                       <div>
@@ -1416,9 +1406,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.mitriyu_praman_patra && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.mitriyu_praman_patra}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                       <div>
@@ -1438,9 +1426,7 @@ export function PropertyDetail() {
                           }
                         />
                         {formData.nikat_sambandhi_praman_patra && (
-                          <p className="text-sm text-green-600">
-                            Uploaded: {formData.nikat_sambandhi_praman_patra}
-                          </p>
+                          <p className="text-sm text-green-600">Uploaded</p>
                         )}
                       </div>
                     </>
@@ -1460,9 +1446,7 @@ export function PropertyDetail() {
                       }
                     />
                     {formData.pan_card && (
-                      <p className="text-sm text-green-600">
-                        Uploaded: {formData.pan_card}
-                      </p>
+                      <p className="text-sm text-green-600">Uploaded</p>
                     )}
                   </div>
 
@@ -1480,9 +1464,7 @@ export function PropertyDetail() {
                       }
                     />
                     {formData.documents_link && (
-                      <p className="text-sm text-green-600">
-                        Uploaded: {formData.documents_link}
-                      </p>
+                      <p className="text-sm text-green-600">Uploaded</p>
                     )}
                   </div>
 
